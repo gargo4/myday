@@ -4,14 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f172a">
-<title>Мой день — Лекарства, Спорт и не только</title>
-
-<!-- PWA & Web Push meta tags -->
 <link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Мой День">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3063/3063822.png">
+<meta name="application-name" content="Мой День">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<title>Мой день — Лекарства, Спорт и не только</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
@@ -37,7 +38,7 @@
 <style>
   [x-cloak] { display: none !important; }
   html, body { background: #0f172a; color-scheme: dark; }
-  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; padding-top: env(safe-area-inset-top); }
   input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); cursor: pointer; }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
@@ -46,7 +47,76 @@
   /* Индиго-тема раздела «Спорт» */
   .theme-sport .btn-primary { background: #6366f1; color: #fff; box-shadow: 0 10px 15px -3px rgba(99,102,241,.25); }
   .theme-sport .btn-primary:hover { background: #818cf8; }
+  .theme-growth .btn-primary { background: #f59e0b; color: #1c1917; box-shadow: 0 10px 15px -3px rgba(245,158,11,.25); }
+  .theme-growth .btn-primary:hover { background: #fbbf24; }
+  .theme-growth .field:focus { border-color: rgba(251,191,36,.6); box-shadow: 0 0 0 2px rgba(251,191,36,.2); }
+  .theme-meal .btn-primary { background: #f43f5e; color: #fff; box-shadow: 0 10px 15px -3px rgba(244,63,94,.25); }
+  .theme-meal .btn-primary:hover { background: #fb7185; }
+  .theme-meal .field:focus { border-color: rgba(251,113,133,.6); box-shadow: 0 0 0 2px rgba(251,113,133,.2); }
   .theme-sport .field:focus { border-color: rgba(129,140,248,.6); box-shadow: 0 0 0 2px rgba(129,140,248,.2); }
+
+  /* ================= АНИМАЦИИ ================= */
+  :root { --ease: cubic-bezier(.2,.8,.2,1); }
+  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(.97) } to { opacity: 1; transform: none } }
+  @keyframes popIn { 0% { opacity: 0; transform: scale(.7) } 60% { opacity: 1; transform: scale(1.08) } 100% { transform: scale(1) } }
+  @keyframes checkPop { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251,191,36,.55) } 40% { transform: scale(1.2) } 100% { transform: scale(1); box-shadow: 0 0 0 16px rgba(251,191,36,0) } }
+  @keyframes flicker { 0%,100% { transform: scale(1) rotate(0) } 25% { transform: scale(1.12) rotate(-6deg) } 60% { transform: scale(.96) rotate(5deg) } }
+  @keyframes drift1 { 0%,100% { transform: translate(0,0) scale(1) } 50% { transform: translate(60px,40px) scale(1.12) } }
+  @keyframes drift2 { 0%,100% { transform: translate(0,0) scale(1) } 50% { transform: translate(-70px,50px) scale(1.1) } }
+  @keyframes drift3 { 0%,100% { transform: translate(0,0) scale(1) } 50% { transform: translate(50px,-45px) scale(1.15) } }
+  @keyframes shimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
+
+  /* смена раздела / вкладки */
+  [x-data="medApp()"], [x-data="mealApp()"], [x-data="sportApp()"], [x-data="growthApp()"], [x-data="shell()"] > section { animation: fadeIn .35s ease both; }
+  main section { animation: fadeUp .4s var(--ease) both; }
+  main > div > button:first-child { animation: fadeIn .4s ease both; }
+
+  /* карточки: появление со ступенчатой задержкой */
+  .card:not([x-transition]) { animation: cardIn .5s var(--ease) both; }
+  .card:nth-child(2) { animation-delay: .04s } .card:nth-child(3) { animation-delay: .08s }
+  .card:nth-child(4) { animation-delay: .12s } .card:nth-child(5) { animation-delay: .16s }
+  .card:nth-child(6) { animation-delay: .2s }  .card:nth-child(n+7) { animation-delay: .24s }
+  article.card:nth-child(odd), .card.group:nth-child(odd) { animation-delay: .06s }
+
+  /* главная */
+  header > p, header > h1 { animation: fadeUp .6s var(--ease) both; }
+  header > h1 { animation-delay: .06s; } header > p:last-child { animation-delay: .12s; }
+  .grid.content-start > button { animation: cardIn .6s var(--ease) both; }
+  .grid.content-start > button:nth-of-type(1) { animation-delay: .10s } .grid.content-start > button:nth-of-type(2) { animation-delay: .18s }
+  .grid.content-start > button:nth-of-type(3) { animation-delay: .26s } .grid.content-start > button:nth-of-type(4) { animation-delay: .34s }
+  .grid.content-start > button:not(:disabled):hover > div:nth-child(2) { transform: scale(1.12) rotate(-4deg); }
+  .grid.content-start > button > div:nth-child(2) { transition: transform .35s var(--ease); }
+
+  /* значки статуса («Принял», «Выполнено» …) и отметка привычки */
+  .card span.rounded-lg[class*="px-3"][class*="py-1.5"] { animation: popIn .4s var(--ease) both; }
+  .pop-done { animation: checkPop .55s var(--ease); }
+  .flame-anim svg { animation: flicker 2.4s ease-in-out infinite; transform-origin: 50% 80%; }
+
+  /* кнопки и интерактив */
+  .btn, button { transition-property: transform, background-color, border-color, color, box-shadow, opacity; transition-duration: .2s; transition-timing-function: var(--ease); }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn:active, button:active { transform: scale(.96); }
+  .card { transition: border-color .25s ease, background-color .25s ease, transform .25s var(--ease), box-shadow .25s ease; }
+  .card.group:hover, article.card:hover { transform: translateY(-2px); box-shadow: 0 20px 30px -12px rgba(0,0,0,.45); }
+
+  /* полосы прогресса: плавный блик */
+  .h-1\.5 > div, .h-2 > div { position: relative; overflow: hidden; }
+  .h-1\.5 > div::after, .h-2 > div::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent); background-size: 200% 100%; animation: shimmer 3.2s linear infinite; }
+
+  /* фон */
+  body > div.fixed > div:nth-child(1) { animation: drift1 22s ease-in-out infinite; }
+  body > div.fixed > div:nth-child(2) { animation: drift2 28s ease-in-out infinite; }
+  body > div.fixed > div:nth-child(3) { animation: drift3 25s ease-in-out infinite; }
+
+  /* нижняя навигация */
+  nav.safe-bottom button span:first-child { transition: background-color .25s ease, transform .3s var(--ease); }
+  nav.safe-bottom button[class*="text-"][class*="-300"] span:first-child { transform: translateY(-2px) scale(1.08); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  }
 </style>
 </head>
 
@@ -58,7 +128,7 @@
   <div class="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-violet-600/10 blur-[120px]"></div>
 </div>
 
-<div x-data="shell()" x-cloak>
+<div x-data="shell()" x-init="initPush()" x-cloak>
 
 <!-- ================= HOME ================= -->
 
@@ -67,19 +137,9 @@
       <p class="text-sm font-medium capitalize text-slate-400" x-text="dateText"></p>
       <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-white sm:text-5xl" x-text="greeting"></h1>
       <p class="mt-3 max-w-xl text-base text-slate-400">Выберите раздел, с которым хотите поработать сегодня.</p>
-
-      <!-- Пуш кнопки -->
-      <div class="mt-6 flex flex-wrap gap-3">
-        <button type="button" @click="subscribePush()" class="btn btn-ghost border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10">
-          <span x-html="hic('bell','h-4 w-4')"></span> Включить Push-уведомления
-        </button>
-        <button type="button" @click="testPush()" class="btn btn-ghost border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10">
-          <span x-html="hic('zap','h-4 w-4')"></span> Проверить Пуш
-        </button>
-      </div>
     </header>
 
-    <div class="mt-8 grid flex-1 content-start gap-4 sm:grid-cols-2 sm:gap-5">
+    <div class="mt-10 grid flex-1 content-start gap-4 sm:grid-cols-2 sm:gap-5">
       <template x-for="s in cards" :key="s.id">
         <button type="button" :disabled="!s.active" @click="openView(s.id)"
           class="group relative block w-full overflow-hidden rounded-3xl border border-white/10 bg-slate-800/50 p-6 text-left shadow-xl shadow-black/20 backdrop-blur-xl transition duration-200 sm:p-7"
@@ -106,12 +166,563 @@
       </template>
     </div>
 
+    <div class="card mt-6 p-5 sm:p-6">
+      <div class="flex items-start gap-4">
+        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-300">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <h3 class="text-base font-bold text-white">Уведомления</h3>
+          <p class="mt-1 text-sm text-slate-400" x-text="pushHint"></p>
+          <div class="mt-4 flex flex-wrap gap-2" x-show="push.supported && !push.needsInstall && push.permission !== 'denied'">
+            <button type="button" class="btn btn-primary" x-show="!push.subscribed" :disabled="push.busy" :class="push.busy ? 'opacity-60' : ''" @click="subscribeToPush()">
+              <span x-text="push.busy ? 'Подключаем…' : 'Включить уведомления'"></span>
+            </button>
+            <button type="button" class="btn btn-ghost" x-show="push.subscribed" :disabled="push.busy" @click="sendTestPush()">Отправить тест</button>
+          </div>
+          <p class="mt-3 text-sm text-rose-300" x-show="push.error" x-text="push.error"></p>
+        </div>
+      </div>
+    </div>
+
     <footer class="mt-10 text-center text-xs text-slate-600">Все данные хранятся локально в вашем браузере</footer>
   </section>
+
+<!-- ================= РАЗДЕЛ: ПРИЁМ ПИЩИ ================= -->
+<div x-data="mealApp()" x-init="init()" x-cloak x-show="view==='nutrition'" class="theme-meal min-h-screen">
+
+  <!-- SIDEBAR (desktop) -->
+  <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-slate-900/60 p-5 backdrop-blur-2xl md:flex">
+    <div class="mb-8 flex items-center gap-3 px-1">
+      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-rose-400 to-amber-400 text-slate-950 shadow-lg shadow-rose-500/20"><span x-html="ic('utensils','h-5 w-5')"></span></div>
+      <div><div class="text-base font-bold leading-tight text-white">Питание</div><div class="text-xs text-slate-400">Трекер приёмов пищи</div></div>
+    </div>
+    <nav class="space-y-1.5">
+      <template x-for="n in nav" :key="n.id">
+        <button @click="go(n.id)" class="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition"
+          :class="tab===n.id ? 'bg-rose-500/10 text-rose-300 ring-1 ring-rose-400/20' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'">
+          <span x-html="ic(n.icon,'h-[18px] w-[18px]')"></span><span x-text="n.label"></span>
+          <span x-show="n.id==='plan' && lowStockCount>0" class="ml-auto rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-semibold text-amber-300" x-text="lowStockCount"></span>
+        </button>
+      </template>
+    </nav>
+    <button type="button" @click="view='home'; tick++; window.scrollTo(0,0)" class="mt-4 flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-white/5 hover:text-slate-200"><span x-html="ic('chevL','h-[18px] w-[18px]')"></span>На главную</button>
+    <div class="mt-auto card p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Сегодня</div>
+      <div class="mt-1 text-2xl font-bold text-white"><span x-text="stats.done"></span><span class="text-slate-500"> / <span x-text="stats.total"></span></span></div>
+      <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-700/60"><div class="h-full rounded-full bg-rose-400 transition-all duration-500" :style="`width:${stats.pctDone}%`"></div></div>
+    </div>
+  </aside>
+
+  <main class="mx-auto max-w-4xl px-4 pb-32 pt-6 md:ml-64 md:max-w-none md:px-10 md:pb-12 md:pt-10">
+    <div class="mx-auto max-w-4xl">
+      <button type="button" @click="view='home'; tick++; window.scrollTo(0,0)" class="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-white md:hidden"><span x-html="ic('chevL','h-4 w-4')"></span>Главная</button>
+
+      <!-- ============ TAB: TODAY ============ -->
+      <section x-show="tab==='today'" x-transition.opacity.duration.200ms>
+        <header class="mb-6">
+          <p class="text-sm font-medium capitalize text-slate-400" x-text="longDate(today)"></p>
+          <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white" x-text="greeting"></h1>
+        </header>
+
+        <div class="card relative overflow-hidden p-5 sm:p-6">
+          <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-rose-500/10 blur-3xl"></div>
+          <div class="flex items-center gap-5">
+            <div class="relative h-24 w-24 shrink-0">
+              <svg viewBox="0 0 80 80" class="h-24 w-24 -rotate-90">
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#334155" stroke-width="8" opacity=".6"/>
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#fb7185" stroke-width="8" stroke-linecap="round" stroke-dasharray="213.63" :stroke-dashoffset="213.63 * (1 - stats.pctDone/100)" style="transition: stroke-dashoffset .6s ease"/>
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center text-lg font-bold text-white" x-text="stats.pctDone + '%'"></div>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Прогресс дня</div>
+              <div class="mt-1 text-2xl font-bold text-white sm:text-3xl">Съедено <span class="text-rose-400" x-text="stats.done"></span> из <span x-text="stats.total"></span></div>
+              <div class="mt-3 flex h-2 overflow-hidden rounded-full bg-slate-700/60">
+                <div class="h-full bg-rose-400 transition-all duration-500" :style="`width:${stats.pctDone}%`"></div>
+                <div class="h-full bg-slate-400/70 transition-all duration-500" :style="`width:${stats.pctSkipped}%`"></div>
+              </div>
+              <div class="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400">
+                <span class="inline-flex items-center gap-1.5"><i class="h-2 w-2 rounded-full bg-rose-400"></i>Съедено: <b class="text-slate-200" x-text="stats.done"></b></span>
+                <span class="inline-flex items-center gap-1.5"><i class="h-2 w-2 rounded-full bg-slate-400"></i>Пропущено: <b class="text-slate-200" x-text="stats.skipped"></b></span>
+                <span class="inline-flex items-center gap-1.5"><i class="h-2 w-2 rounded-full bg-slate-600"></i>Осталось: <b class="text-slate-200" x-text="stats.pending"></b></span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 text-xs text-slate-400">Калории: <b class="text-slate-200" x-text="kcalOf(today) + (goal>0 ? ' / ' + goal : '') + ' ккал'"></b></div>
+          <div x-show="goal>0" class="mt-2 flex h-1.5 overflow-hidden rounded-full bg-slate-700/60"><div class="h-full bg-amber-400 transition-all duration-500" :style="`width:${Math.min(100, Math.round(kcalOf(today)/goal*100))}%`"></div></div>
+          <div x-show="nextMeal" class="mt-5 flex items-center gap-3 rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 text-sm">
+            <span class="text-indigo-300" x-html="ic('clock','h-4 w-4')"></span><span class="text-slate-400">Следующий приём:</span>
+            <span class="font-semibold text-white" x-text="nextMeal ? nextMeal.time + ' · ' + nextMeal.p.name : ''"></span>
+          </div>
+          <div x-show="stats.total>0 && stats.pending===0" class="mt-5 flex items-center gap-3 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300"><span x-html="ic('check','h-4 w-4')"></span> План на сегодня выполнен. Отлично!</div>
+        </div>
+
+        <div x-show="schedule.length===0" class="card mt-6 p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic('utensils','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white">На сегодня ничего не запланировано</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400">Добавьте блюда в рацион и задайте расписание приёмов пищи.</p>
+          <button class="btn btn-primary mt-5" @click="go('plan'); openAdd()"><span x-html="ic('plus','h-4 w-4')"></span>Добавить блюдо</button>
+        </div>
+
+        <div class="mt-8 space-y-8">
+          <template x-for="p in periods" :key="p.id">
+            <div x-show="itemsFor(p.id).length>0">
+              <div class="mb-3 flex items-center gap-3">
+                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-slate-300" x-html="ic(p.icon,'h-[18px] w-[18px]')"></div>
+                <div><h2 class="text-base font-bold text-white" x-text="p.title"></h2><p class="text-xs text-slate-500" x-text="p.range"></p></div>
+                <span class="ml-auto rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-slate-300" x-text="itemsFor(p.id).filter(i=>i.entry && i.entry.status==='done').length + ' / ' + itemsFor(p.id).length"></span>
+              </div>
+              <div class="space-y-3">
+                <template x-for="it in itemsFor(p.id)" :key="it.key">
+                  <div class="card group relative overflow-hidden p-4 transition hover:border-white/20" :class="it.entry ? 'opacity-90' : ''">
+                    <div class="absolute inset-y-0 left-0 w-1" :style="`background:${it.p.color}`"></div>
+                    <div class="flex flex-col gap-4 pl-2 sm:flex-row sm:items-center">
+                      <div class="flex min-w-0 flex-1 items-center gap-3.5">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" :style="`background:${it.p.color}26;color:${it.p.color}`" x-html="ic(it.p.icon,'h-6 w-6')"></div>
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-2">
+                            <span class="rounded-md bg-slate-900/70 px-2 py-0.5 text-xs font-bold tabular-nums text-slate-200" x-text="it.time"></span>
+                            <h3 class="truncate font-semibold text-white" :class="it.entry && it.entry.status==='skipped' ? 'line-through decoration-slate-500' : ''" x-text="it.p.name"></h3>
+                          </div>
+                          <p class="mt-1 truncate text-sm text-slate-400"><span x-text="it.p.portion"></span> · <span x-text="it.p.type"></span><span x-show="it.p.kcal"> · <span x-text="it.p.kcal"></span> ккал</span></p>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-2 sm:shrink-0">
+                        <template x-if="!it.entry">
+                          <div class="flex w-full gap-2 sm:w-auto">
+                            <button class="btn btn-primary flex-1 sm:flex-none" @click="mark(it,'done')"><span x-html="ic('check','h-4 w-4')"></span>Съел</button>
+                            <button class="btn btn-ghost flex-1 sm:flex-none" @click="mark(it,'skipped')"><span x-html="ic('skip','h-4 w-4')"></span>Пропустил</button>
+                          </div>
+                        </template>
+                        <template x-if="it.entry">
+                          <div class="flex w-full items-center justify-between gap-3 sm:w-auto">
+                            <span class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold" :class="it.entry.status==='done' ? 'bg-rose-500/15 text-rose-300' : 'bg-slate-500/20 text-slate-300'">
+                              <span x-html="ic(it.entry.status==='done' ? 'check' : 'skip','h-3.5 w-3.5')"></span>
+                              <span x-text="(it.entry.status==='done' ? 'Съедено в ' : 'Пропущено в ') + it.entry.at"></span>
+                            </span>
+                            <button class="btn btn-ghost !px-3 !py-1.5 text-xs" @click="undo(it)"><span x-html="ic('undo','h-3.5 w-3.5')"></span>Отменить</button>
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Внеплановые -->
+        <div class="mt-8">
+          <div class="mb-3 flex items-center justify-between"><h2 class="text-base font-bold text-white">Внеплановые</h2>
+            <button class="btn btn-ghost !py-1.5 text-xs" @click="exOpen=!exOpen" x-text="exOpen ? 'Закрыть' : '+ Добавить'"></button></div>
+          <div x-show="exOpen" class="card mb-3 space-y-3 p-4">
+            <div class="grid grid-cols-2 gap-3">
+              <select class="field" x-model="ex.type"><template x-for="t in types" :key="t"><option :value="t" x-text="t"></option></template></select>
+              <input type="number" min="0" inputmode="numeric" class="field" placeholder="ккал" x-model="ex.kcal">
+            </div>
+            <input type="text" class="field" placeholder="Что съели" x-model="ex.name" @keydown.enter="addExtra()">
+            <button class="btn btn-primary w-full" @click="addExtra()">Записать</button>
+          </div>
+          <p x-show="extras.length===0 && !exOpen" class="text-sm text-slate-500">Сегодня внеплановых приёмов нет</p>
+          <div class="space-y-2">
+            <template x-for="e in extras" :key="e.key">
+              <div class="card flex items-center gap-3 p-3.5">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" :style="`background:${e.color}26;color:${e.color}`" x-html="ic(e.icon,'h-5 w-5')"></div>
+                <div class="min-w-0 flex-1"><div class="truncate text-sm font-semibold text-white" x-text="e.name"></div><div class="text-xs text-slate-400"><span x-text="e.time"></span> · <span x-text="e.type"></span><span x-show="e.kcal"> · <span x-text="e.kcal"></span> ккал</span></div></div>
+                <button class="rounded-lg p-2 text-slate-500 transition hover:bg-rose-500/20 hover:text-rose-300" @click="undo({key:e.key,p:{}})" x-html="ic('trash','h-4 w-4')"></button>
+              </div>
+            </template>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: PLAN ============ -->
+      <section x-show="tab==='plan'" x-transition.opacity.duration.200ms>
+        <header class="mb-6 flex items-end justify-between gap-4">
+          <div><p class="text-sm font-medium text-slate-400">Все блюда</p><h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">Мой рацион</h1></div>
+          <button class="btn btn-primary" @click="openAdd()"><span x-html="ic('plus','h-4 w-4')"></span><span class="hidden sm:inline">Добавить блюдо</span><span class="sm:hidden">Добавить</span></button>
+        </header>
+        <div class="card mb-4 p-4">
+          <label class="label">Цель по калориям в день (необязательно)</label>
+          <input type="number" min="0" inputmode="numeric" class="field" placeholder="например, 2000" x-model.number="goal" @change="save()">
+        </div>
+        <div x-show="plan.length===0" class="card p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic('utensils','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white">Рацион пуст</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400">Добавьте первое блюдо, чтобы начать отслеживать питание.</p>
+          <button class="btn btn-primary mt-5" @click="openAdd()"><span x-html="ic('plus','h-4 w-4')"></span>Добавить блюдо</button>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <template x-for="p in sortedPlan" :key="p.id">
+            <article class="card relative overflow-hidden p-5">
+              <div class="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full blur-3xl" :style="`background:${p.color}33`"></div>
+              <div class="relative flex items-start gap-3.5">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" :style="`background:${p.color}26;color:${p.color}`" x-html="ic(p.icon,'h-6 w-6')"></div>
+                <div class="min-w-0 flex-1"><h3 class="truncate text-lg font-bold text-white" x-text="p.name"></h3><p class="text-sm text-slate-400"><span x-text="p.portion"></span><span x-show="p.kcal"> · <span x-text="p.kcal"></span> ккал</span></p></div>
+                <div class="flex shrink-0 gap-1.5">
+                  <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10 hover:text-white" @click="openEdit(p)" title="Редактировать" x-html="ic('edit','h-4 w-4')"></button>
+                  <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-rose-500/20 hover:text-rose-300" @click="confirmId=p.id" title="Удалить" x-html="ic('trash','h-4 w-4')"></button>
+                </div>
+              </div>
+              <div class="relative mt-4 flex flex-wrap gap-1.5">
+                <template x-for="t in p.times" :key="t"><span class="rounded-md border border-white/10 bg-slate-900/60 px-2 py-1 text-xs font-semibold tabular-nums text-slate-200" x-text="t"></span></template>
+              </div>
+              <div class="relative mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+                <span x-text="freqLabel(p.times.length)"></span><span class="text-slate-600">•</span><span x-text="p.type"></span><span class="text-slate-600">•</span><span x-text="daysLabel(p.days)"></span>
+              </div>
+              <div class="relative mt-5">
+                <div class="mb-1.5 flex items-center justify-between text-xs">
+                  <span class="text-slate-400">Запас продуктов</span>
+                  <span class="font-semibold" :class="stockState(p).low ? 'text-amber-300' : 'text-slate-200'"><span x-text="fmt(p.stock)"></span> порц. <span class="font-normal text-slate-500" x-text="'· ~' + stockState(p).days + ' дн.'"></span></span>
+                </div>
+                <div class="h-1.5 overflow-hidden rounded-full bg-slate-700/60"><div class="h-full rounded-full transition-all duration-500" :style="`width:${stockState(p).pct}%;background:${stockState(p).low ? '#f59e0b' : p.color}`"></div></div>
+                <p x-show="stockState(p).low" class="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-amber-300"><span x-html="ic('alert','h-3.5 w-3.5')"></span>Продукты заканчиваются — пора докупить</p>
+              </div>
+            </article>
+          </template>
+        </div>
+      </section>
+
+      <!-- ============ TAB: HISTORY ============ -->
+      <section x-show="tab==='history'" x-transition.opacity.duration.200ms>
+        <header class="mb-6"><p class="text-sm font-medium text-slate-400">Журнал питания</p><h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">История</h1></header>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="card p-4"><div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Соблюдение · 7 дн.</div><div class="mt-1 text-2xl font-extrabold text-rose-400 sm:text-3xl" x-text="weekStats.adherence + '%'"></div></div>
+          <div class="card p-4"><div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Съедено</div><div class="mt-1 text-2xl font-extrabold text-white sm:text-3xl" x-text="weekStats.done"></div></div>
+          <div class="card p-4"><div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Пропущено</div><div class="mt-1 text-2xl font-extrabold text-slate-300 sm:text-3xl" x-text="weekStats.skipped"></div></div>
+          <div class="card p-4"><div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Ср. ккал / день</div><div class="mt-1 text-2xl font-extrabold text-white sm:text-3xl" x-text="weekStats.avgKcal"></div></div>
+        </div>
+        <div class="mt-5 grid gap-5 lg:grid-cols-5">
+          <div class="card p-5 lg:col-span-3">
+            <div class="mb-4 flex items-center justify-between">
+              <h2 class="text-base font-bold capitalize text-white" x-text="monthTitle"></h2>
+              <div class="flex gap-1.5">
+                <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10" @click="shiftMonth(-1)" x-html="ic('chevL','h-4 w-4')"></button>
+                <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10 disabled:opacity-30" :disabled="isCurrentMonth" @click="shiftMonth(1)" x-html="ic('chevR','h-4 w-4')"></button>
+              </div>
+            </div>
+            <div class="mb-2 grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500"><template x-for="d in dnames" :key="d"><div x-text="d"></div></template></div>
+            <div class="grid grid-cols-7 gap-1.5">
+              <template x-for="(c,i) in calCells" :key="i">
+                <div><template x-if="c">
+                  <button @click="selected=c.key" :disabled="c.key>today" class="relative flex aspect-square w-full flex-col items-center justify-center rounded-xl border text-sm font-semibold transition disabled:cursor-default disabled:opacity-30" :class="[dayClass(c.key), selected===c.key ? 'ring-2 ring-rose-400' : '']">
+                    <span x-text="c.d"></span><span x-show="c.key===today" class="absolute bottom-1 h-1 w-1 rounded-full bg-rose-400"></span>
+                  </button></template></div>
+              </template>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-400">
+              <span class="inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded bg-emerald-500/60"></i>Всё съедено</span>
+              <span class="inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded bg-amber-500/60"></i>Частично</span>
+              <span class="inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded bg-rose-500/60"></i>Много пропусков</span>
+              <span class="inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded bg-sky-500/60"></i>Только внеплановое</span>
+            </div>
+            <p class="mt-3 text-xs text-slate-400">Серия дней: <b class="text-slate-200" x-text="streak"></b></p>
+          </div>
+          <div class="card p-5 lg:col-span-2">
+            <div class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">Выбранный день</div>
+            <h2 class="mb-1 text-lg font-bold capitalize text-white" x-text="longDate(selected)"></h2>
+            <p class="mb-4 text-sm text-slate-400">Калории: <b class="text-slate-200" x-text="kcalOf(selected)"></b> ккал</p>
+            <div x-show="selectedEntries.length===0" class="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-slate-500">Нет записей за этот день</div>
+            <div class="space-y-2.5">
+              <template x-for="e in selectedEntries" :key="e.key">
+                <div class="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-900/50 p-3">
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" :style="`background:${e.color}26;color:${e.color}`" x-html="ic(e.icon,'h-5 w-5')"></div>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-semibold text-white" :class="e.status==='skipped' ? 'line-through decoration-slate-500' : ''" x-text="e.name"></div>
+                    <div class="truncate text-xs text-slate-400"><span x-text="e.type"></span><span x-show="e.kcal"> · <span x-text="e.kcal"></span> ккал</span> · <span x-text="e.extra ? 'внепл.' : 'план ' + e.time"></span></div>
+                  </div>
+                  <div class="text-right">
+                    <div class="inline-flex rounded-md px-2 py-1 text-[11px] font-semibold" :class="e.status==='done' ? 'bg-rose-500/15 text-rose-300' : 'bg-slate-500/20 text-slate-300'" x-text="e.status==='done' ? 'Съедено' : 'Пропущено'"></div>
+                    <div class="mt-1 text-[11px] tabular-nums text-slate-500" x-text="'в ' + e.at"></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- BOTTOM NAV (mobile) -->
+  <nav class="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-slate-900/80 px-3 pt-2 backdrop-blur-2xl md:hidden">
+    <div class="mx-auto grid max-w-md grid-cols-3 gap-1">
+      <template x-for="n in nav" :key="n.id">
+        <button @click="go(n.id)" class="relative flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-medium transition" :class="tab===n.id ? 'text-rose-300' : 'text-slate-500'">
+          <span class="rounded-lg px-4 py-1 transition" :class="tab===n.id ? 'bg-rose-500/15' : ''" x-html="ic(n.icon,'h-5 w-5')"></span><span x-text="n.label"></span>
+          <span x-show="n.id==='plan' && lowStockCount>0" class="absolute right-6 top-1 h-2 w-2 rounded-full bg-amber-400"></span>
+        </button>
+      </template>
+    </div>
+  </nav>
+
+  <!-- MODAL: ADD / EDIT -->
+  <div x-show="modalOpen" x-cloak class="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4" @keydown.escape.window="closeModal()">
+    <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" x-show="modalOpen" x-transition.opacity @click="closeModal()"></div>
+    <div class="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-white/10 bg-slate-900 shadow-2xl shadow-black/50 sm:rounded-3xl" x-show="modalOpen"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-6 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0 translate-y-4">
+      <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
+        <h2 class="text-lg font-bold text-white" x-text="editingId ? 'Редактировать блюдо' : 'Новое блюдо'"></h2>
+        <button class="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white" @click="closeModal()" x-html="ic('x','h-5 w-5')"></button>
+      </div>
+      <form class="flex-1 space-y-5 overflow-y-auto px-5 py-5" @submit.prevent="savePlan()">
+        <div class="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-slate-800/50 p-3.5">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl" :style="`background:${form.color}26;color:${form.color}`" x-html="ic(form.icon,'h-6 w-6')"></div>
+          <div class="min-w-0"><div class="truncate font-semibold text-white" x-text="form.name || 'Название блюда'"></div><div class="truncate text-sm text-slate-400" x-text="form.portion || 'Порция'"></div></div>
+        </div>
+        <div><label class="label">Название блюда</label>
+          <input class="field" :class="errors.name ? '!border-rose-400/60' : ''" x-model="form.name" placeholder="Например, Овсянка с бананом" maxlength="60">
+          <p x-show="errors.name" class="mt-1.5 text-xs text-rose-300" x-text="errors.name"></p></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="label">Порция</label><input class="field" x-model="form.portion" placeholder="250 г, 1 тарелка" maxlength="40"></div>
+          <div><label class="label">Калории, ккал</label><input type="number" min="0" inputmode="numeric" class="field" x-model="form.kcal"></div>
+        </div>
+        <div><label class="label">График приёма</label>
+          <div class="space-y-2"><template x-for="(t,i) in form.times" :key="i">
+            <div class="flex gap-2"><input type="time" class="field" x-model="form.times[i]">
+              <button type="button" class="rounded-xl border border-white/10 bg-white/5 px-3 text-slate-400 transition hover:bg-rose-500/20 hover:text-rose-300 disabled:opacity-30" :disabled="form.times.length<=1" @click="form.times.splice(i,1)" x-html="ic('trash','h-4 w-4')"></button></div>
+          </template></div>
+          <button type="button" class="btn btn-ghost mt-2 !py-2 text-xs" @click="addTime()"><span x-html="ic('plus','h-3.5 w-3.5')"></span>Добавить время</button>
+          <p x-show="errors.times" class="mt-1.5 text-xs text-rose-300" x-text="errors.times"></p></div>
+        <div><label class="label">Дни недели</label>
+          <div class="flex flex-wrap gap-2"><template x-for="(d,i) in dnames" :key="i">
+            <button type="button" class="rounded-lg border px-3 py-1.5 text-sm font-medium transition" :class="form.days.includes(i) ? 'border-rose-400/40 bg-rose-500/20 text-rose-200' : 'border-white/10 bg-white/5 text-slate-400'" @click="toggleDay(i)" x-text="d"></button>
+          </template></div>
+          <p x-show="errors.days" class="mt-1.5 text-xs text-rose-300" x-text="errors.days"></p></div>
+        <div><label class="label">Тип приёма</label>
+          <div class="grid grid-cols-2 gap-2"><template x-for="t in types" :key="t">
+            <button type="button" @click="setType(t)" class="rounded-xl border px-3 py-2.5 text-sm font-medium transition" :class="form.type===t ? 'border-rose-400/50 bg-rose-500/10 text-rose-300' : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'" x-text="t"></button>
+          </template></div></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="label">Запас, порций</label><input type="number" min="0" step="1" class="field" x-model="form.stock"></div>
+          <div><label class="label">Расход за приём, порц.</label><input type="number" min="0.5" step="0.5" class="field" x-model="form.perDose"></div>
+        </div>
+        <div><label class="label">Цвет карточки</label>
+          <div class="flex flex-wrap gap-2.5"><template x-for="c in colors" :key="c">
+            <button type="button" @click="form.color=c" class="h-9 w-9 rounded-full transition hover:scale-110" :style="`background:${c}`" :class="form.color===c ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-900' : ''"></button>
+          </template></div></div>
+        <div><label class="label">Иконка</label>
+          <div class="grid grid-cols-8 gap-2"><template x-for="k in iconChoices" :key="k">
+            <button type="button" @click="form.icon=k" class="flex aspect-square items-center justify-center rounded-xl border transition" :style="form.icon===k ? `border-color:${form.color}99;background:${form.color}22;color:${form.color}` : ''" :class="form.icon===k ? '' : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10'" x-html="ic(k,'h-5 w-5')"></button>
+          </template></div></div>
+        <div class="flex gap-3 pt-1">
+          <button type="button" class="btn btn-ghost flex-1" @click="closeModal()">Отмена</button>
+          <button type="submit" class="btn btn-primary flex-1" x-text="editingId ? 'Сохранить' : 'Добавить'"></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRM DELETE -->
+  <div x-show="confirmId" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center p-4" @keydown.escape.window="confirmId=null">
+    <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" x-transition.opacity @click="confirmId=null"></div>
+    <div class="card relative w-full max-w-sm bg-slate-900 p-6 text-center" x-transition>
+      <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-300" x-html="ic('trash','h-6 w-6')"></div>
+      <h3 class="text-lg font-bold text-white">Удалить блюдо?</h3>
+      <p class="mt-1.5 text-sm text-slate-400">«<span class="text-slate-200" x-text="confirmItem ? confirmItem.name : ''"></span>» будет удалено из рациона и расписания. Записи в истории сохранятся.</p>
+      <div class="mt-6 flex gap-3"><button class="btn btn-ghost flex-1" @click="confirmId=null">Отмена</button><button class="btn btn-danger flex-1" @click="removePlan()">Удалить</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= РАЗДЕЛ: САМОРАЗВИТИЕ ================= -->
+<div x-data="growthApp()" x-init="init()" x-cloak x-show="view==='growth'" class="theme-growth min-h-screen">
+  <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-slate-900/60 p-5 backdrop-blur-2xl md:flex">
+    <div class="mb-8 flex items-center gap-3 px-1">
+      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 shadow-lg shadow-amber-500/20" x-html="ic('sprout','h-5 w-5')"></div>
+      <div><div class="text-base font-bold leading-tight text-white">Саморазвитие</div><div class="text-xs text-slate-400">Привычки, цели, книги</div></div>
+    </div>
+    <nav class="space-y-1.5">
+      <template x-for="n in nav" :key="n.id">
+        <button @click="tab=n.id" class="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition"
+          :class="tab===n.id ? 'bg-amber-500/10 text-amber-300 ring-1 ring-amber-400/20' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'">
+          <span x-html="ic(n.icon,'h-[18px] w-[18px]')"></span><span x-text="n.label"></span>
+        </button>
+      </template>
+    </nav>
+    <button type="button" @click="view='home'; tick++; window.scrollTo(0,0)" class="mt-4 flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-white/5 hover:text-slate-200"><span x-html="ic('chevL','h-[18px] w-[18px]')"></span>На главную</button>
+    <div class="mt-auto card p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Привычки сегодня</div>
+      <div class="mt-1 text-2xl font-bold text-white"><span x-text="stats.done"></span><span class="text-slate-500"> / <span x-text="stats.total"></span></span></div>
+      <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-700/60"><div class="h-full rounded-full bg-amber-400 transition-all duration-500" :style="`width:${stats.pct}%`"></div></div>
+    </div>
+  </aside>
+
+  <main class="mx-auto max-w-4xl px-4 pb-32 pt-6 md:ml-64 md:max-w-none md:px-10 md:pb-12 md:pt-10">
+    <div class="mx-auto max-w-3xl">
+      <button type="button" @click="view='home'; tick++; window.scrollTo(0,0)" class="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-white md:hidden"><span x-html="ic('chevL','h-4 w-4')"></span>Главная</button>
+
+      <!-- ===== ПРИВЫЧКИ ===== -->
+      <section x-show="tab==='habits'" x-transition.opacity.duration.200ms>
+        <header class="mb-6">
+          <p class="text-sm font-medium capitalize text-slate-400" x-text="longDate(today)"></p>
+          <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">Привычки</h1>
+        </header>
+        <div class="card relative overflow-hidden p-5 sm:p-6">
+          <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl"></div>
+          <div class="flex items-center gap-5">
+            <div class="relative h-24 w-24 shrink-0">
+              <svg viewBox="0 0 80 80" class="h-24 w-24 -rotate-90">
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#334155" stroke-width="8" opacity=".6"/>
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#fbbf24" stroke-width="8" stroke-linecap="round" stroke-dasharray="213.63" :stroke-dashoffset="213.63 * (1 - stats.pct/100)" style="transition: stroke-dashoffset .6s ease"/>
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center text-lg font-bold text-white" x-text="stats.pct + '%'"></div>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Прогресс дня</div>
+              <div class="mt-1 text-2xl font-bold text-white sm:text-3xl">Выполнено <span class="text-amber-400" x-text="stats.done"></span> из <span x-text="stats.total"></span></div>
+              <p class="mt-2 text-sm text-slate-400" x-text="stats.total>0 && stats.done===stats.total ? 'Все привычки на сегодня закрыты. Отлично!' : 'Маленькие шаги каждый день дают результат.'"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 mb-3 flex items-center justify-between">
+          <h2 class="text-base font-bold text-white">Мои привычки</h2>
+          <button class="btn btn-ghost !py-1.5 text-xs" @click="hOpen=!hOpen" x-text="hOpen ? 'Закрыть' : '+ Добавить'"></button>
+        </div>
+        <div x-show="hOpen" class="card mb-3 space-y-3 p-4">
+          <input type="text" class="field" placeholder="Например, Медитация 10 минут" maxlength="50" x-model="hForm.name" @keydown.enter="addHabit()">
+          <div><label class="label">Время (необязательно)</label>
+            <div class="flex gap-2"><input type="time" class="field" x-model="hForm.time">
+              <button type="button" class="btn btn-ghost !px-3 text-xs" x-show="hForm.time" @click="hForm.time=''">Без времени</button></div></div>
+          <div class="flex flex-wrap gap-2"><template x-for="k in hIcons" :key="k">
+            <button type="button" @click="hForm.icon=k" class="flex h-10 w-10 items-center justify-center rounded-xl border transition" :class="hForm.icon===k ? 'border-amber-400/50 bg-amber-500/15 text-amber-300' : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10'" x-html="ic(k,'h-5 w-5')"></button>
+          </template></div>
+          <button class="btn btn-primary w-full" @click="addHabit()">Добавить привычку</button>
+        </div>
+        <div x-show="habits.length===0" class="card p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic('sprout','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white">Пока нет привычек</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400">Добавьте первую привычку и отмечайте её каждый день.</p>
+        </div>
+        <div class="space-y-3">
+          <template x-for="h in sortedHabits" :key="h.id">
+            <div class="card relative overflow-hidden p-4">
+              <div class="absolute inset-y-0 left-0 w-1 bg-amber-400"></div>
+              <div class="flex items-center gap-3.5 pl-2">
+                <button type="button" @click="toggleHabit(h.id)" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition active:scale-95"
+                  :class="isDone(h.id) ? 'pop-done border-amber-400 bg-amber-400 text-slate-950' : 'border-white/10 bg-white/5 text-amber-300 hover:bg-white/10'"
+                  x-html="ic(isDone(h.id) ? 'check' : h.icon,'h-6 w-6')"></button>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <span x-show="h.time" class="rounded-md bg-slate-900/70 px-2 py-0.5 text-xs font-bold tabular-nums text-amber-300" x-text="h.time"></span>
+                    <h3 class="truncate font-semibold text-white" :class="isDone(h.id) ? 'text-slate-400 line-through decoration-slate-500' : ''" x-text="h.name"></h3>
+                  </div>
+                  <div class="mt-1.5 flex items-center gap-1">
+                    <template x-for="d in week" :key="d.key"><span class="h-2 w-2 rounded-full" :class="logs[d.key] && logs[d.key][h.id] ? 'bg-amber-400' : 'bg-slate-700'" :title="d.key"></span></template>
+                    <span class="ml-2 inline-flex items-center gap-1 text-xs text-slate-400"><span class="flame-anim text-amber-300" x-html="ic('flame','h-3.5 w-3.5')"></span><span x-text="streak(h.id) + ' дн.'"></span></span>
+                  </div>
+                </div>
+                <label class="relative cursor-pointer rounded-lg p-2 text-slate-500 transition hover:bg-white/10 hover:text-amber-300" title="Изменить время">
+                  <span x-html="ic('clock','h-4 w-4')"></span>
+                  <input type="time" class="absolute inset-0 h-full w-full cursor-pointer opacity-0" :value="h.time||''" @change="h.time=$event.target.value; save()">
+                </label>
+                <button class="rounded-lg p-2 text-slate-500 transition hover:bg-rose-500/20 hover:text-rose-300" @click="delHabit(h.id)" x-html="ic('trash','h-4 w-4')"></button>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
+
+      <!-- ===== ЦЕЛИ ===== -->
+      <section x-show="tab==='goals'" x-transition.opacity.duration.200ms>
+        <header class="mb-6 flex items-end justify-between gap-4">
+          <div><p class="text-sm font-medium text-slate-400" x-text="goals.filter(g=>g.cur>=g.target).length + ' из ' + goals.length + ' достигнуто'"></p><h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">Цели</h1></div>
+          <button class="btn btn-primary" @click="gOpen=!gOpen"><span x-html="ic('plus','h-4 w-4')"></span>Цель</button>
+        </header>
+        <div x-show="gOpen" class="card mb-4 space-y-3 p-4">
+          <input type="text" class="field" placeholder="Например, Пробежать 100 км" maxlength="60" x-model="gForm.name">
+          <div class="grid grid-cols-2 gap-3">
+            <input type="number" min="1" inputmode="decimal" class="field" placeholder="Цель (число)" x-model="gForm.target">
+            <input type="text" class="field" placeholder="Ед. (км, стр., ч)" maxlength="12" x-model="gForm.unit">
+          </div>
+          <button class="btn btn-primary w-full" @click="addGoal()">Добавить цель</button>
+        </div>
+        <div x-show="goals.length===0" class="card p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic('target','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white">Целей пока нет</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400">Поставьте измеримую цель и двигайтесь к ней шаг за шагом.</p>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <template x-for="g in goals" :key="g.id">
+            <article class="card relative overflow-hidden p-5">
+              <div class="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-amber-500/15 blur-3xl"></div>
+              <div class="relative flex items-start gap-3">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-300" x-html="ic(g.cur>=g.target ? 'trophy' : 'target','h-5 w-5')"></div>
+                <div class="min-w-0 flex-1"><h3 class="truncate text-base font-bold text-white" x-text="g.name"></h3>
+                  <p class="text-sm text-slate-400"><span x-text="fmt(g.cur)"></span> / <span x-text="fmt(g.target)"></span> <span x-text="g.unit"></span></p></div>
+                <button class="rounded-lg p-2 text-slate-500 transition hover:bg-rose-500/20 hover:text-rose-300" @click="goals=goals.filter(x=>x.id!==g.id); save()" x-html="ic('trash','h-4 w-4')"></button>
+              </div>
+              <div class="relative mt-4">
+                <div class="mb-1.5 flex justify-between text-xs"><span class="text-slate-400">Прогресс</span><span class="font-semibold text-amber-300" x-text="pctOf(g.cur,g.target) + '%'"></span></div>
+                <div class="h-2 overflow-hidden rounded-full bg-slate-700/60"><div class="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400 transition-all duration-500" :style="`width:${pctOf(g.cur,g.target)}%`"></div></div>
+              </div>
+              <div class="relative mt-4 flex gap-2">
+                <button class="btn btn-ghost flex-1 !py-2" @click="step(g,-1)">−</button>
+                <button class="btn btn-primary flex-[2] !py-2" @click="step(g,1)">+ Добавить</button>
+              </div>
+            </article>
+          </template>
+        </div>
+      </section>
+
+      <!-- ===== КНИГИ ===== -->
+      <section x-show="tab==='books'" x-transition.opacity.duration.200ms>
+        <header class="mb-6 flex items-end justify-between gap-4">
+          <div><p class="text-sm font-medium text-slate-400" x-text="books.filter(b=>b.read>=b.pages).length + ' прочитано'"></p><h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">Книги</h1></div>
+          <button class="btn btn-primary" @click="bOpen=!bOpen"><span x-html="ic('plus','h-4 w-4')"></span>Книга</button>
+        </header>
+        <div x-show="bOpen" class="card mb-4 space-y-3 p-4">
+          <input type="text" class="field" placeholder="Название" maxlength="70" x-model="bForm.title">
+          <div class="grid grid-cols-2 gap-3">
+            <input type="text" class="field" placeholder="Автор" maxlength="50" x-model="bForm.author">
+            <input type="number" min="1" inputmode="numeric" class="field" placeholder="Страниц" x-model="bForm.pages">
+          </div>
+          <button class="btn btn-primary w-full" @click="addBook()">Добавить книгу</button>
+        </div>
+        <div x-show="books.length===0" class="card p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic('book','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white">Список чтения пуст</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400">Добавьте книгу и отмечайте прочитанные страницы.</p>
+        </div>
+        <div class="space-y-3">
+          <template x-for="b in books" :key="b.id">
+            <article class="card flex items-center gap-4 p-4">
+              <div class="flex h-16 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400/30 to-orange-500/30 text-amber-300" x-html="ic(b.read>=b.pages ? 'check' : 'book','h-5 w-5')"></div>
+              <div class="min-w-0 flex-1">
+                <h3 class="truncate font-semibold text-white" x-text="b.title"></h3>
+                <p class="truncate text-xs text-slate-400"><span x-text="b.author || 'Автор не указан'"></span> · <span x-text="b.read + ' / ' + b.pages + ' стр.'"></span></p>
+                <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-700/60"><div class="h-full rounded-full bg-amber-400 transition-all duration-500" :style="`width:${pctOf(b.read,b.pages)}%`"></div></div>
+              </div>
+              <div class="flex shrink-0 flex-col gap-1.5">
+                <button class="btn btn-primary !px-3 !py-1.5 text-xs" @click="readPages(b,10)">+10 стр.</button>
+                <button class="rounded-lg px-2 py-1 text-xs text-slate-500 transition hover:text-rose-300" @click="books=books.filter(x=>x.id!==b.id); save()">Удалить</button>
+              </div>
+            </article>
+          </template>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <nav class="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-slate-900/80 px-3 pt-2 backdrop-blur-2xl md:hidden">
+    <div class="mx-auto grid max-w-md grid-cols-3 gap-1">
+      <template x-for="n in nav" :key="n.id">
+        <button @click="tab=n.id; window.scrollTo(0,0)" class="flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-medium transition" :class="tab===n.id ? 'text-amber-300' : 'text-slate-500'">
+          <span class="rounded-lg px-4 py-1 transition" :class="tab===n.id ? 'bg-amber-500/15' : ''" x-html="ic(n.icon,'h-5 w-5')"></span><span x-text="n.label"></span>
+        </button>
+      </template>
+    </div>
+  </nav>
+</div>
 
 <!-- ================= РАЗДЕЛ: ЛЕКАРСТВА ================= -->
 <div x-data="medApp()" x-init="init()" x-cloak x-show="view==='meds'" class="min-h-screen">
 
+  <!-- ================= SIDEBAR (desktop) ================= -->
   <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-slate-900/60 p-5 backdrop-blur-2xl md:flex">
     <div class="mb-8 flex items-center gap-3 px-1">
       <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-indigo-500 text-slate-950 shadow-lg shadow-emerald-500/20">
@@ -147,6 +758,7 @@
     </div>
   </aside>
 
+  <!-- ================= MAIN ================= -->
   <main class="mx-auto max-w-4xl px-4 pb-32 pt-6 md:ml-64 md:max-w-none md:px-10 md:pb-12 md:pt-10">
     <div class="mx-auto max-w-4xl">
 
@@ -154,12 +766,14 @@
         <span x-html="ic('chevL','h-4 w-4')"></span>Главная
       </button>
 
+      <!-- ============ TAB: TODAY ============ -->
       <section x-show="tab==='today'" x-transition.opacity.duration.200ms>
         <header class="mb-6">
           <p class="text-sm font-medium capitalize text-slate-400" x-text="longDate(today)"></p>
           <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white" x-text="greeting"></h1>
         </header>
 
+        <!-- Progress card -->
         <div class="card relative overflow-hidden p-5 sm:p-6">
           <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-emerald-500/10 blur-3xl"></div>
           <div class="flex items-center gap-5">
@@ -188,8 +802,26 @@
               </div>
             </div>
           </div>
+
+          <div x-show="nextDose" class="mt-5 flex items-center gap-3 rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 text-sm">
+            <span class="text-indigo-300" x-html="ic('clock','h-4 w-4')"></span>
+            <span class="text-slate-400">Следующий приём:</span>
+            <span class="font-semibold text-white" x-text="nextDose ? nextDose.time + ' · ' + nextDose.med.name : ''"></span>
+          </div>
+          <div x-show="stats.total>0 && stats.pending===0" class="mt-5 flex items-center gap-3 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
+            <span x-html="ic('check','h-4 w-4')"></span> План на сегодня выполнен. Отличная работа!
+          </div>
         </div>
 
+        <!-- Empty state -->
+        <div x-show="schedule.length===0" class="card mt-6 p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic('package','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white">На сегодня ничего не запланировано</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400">Добавьте препараты в аптечку и задайте расписание приёма.</p>
+          <button class="btn btn-primary mt-5" @click="go('cabinet'); openAdd()"><span x-html="ic('plus','h-4 w-4')"></span>Добавить лекарство</button>
+        </div>
+
+        <!-- Periods -->
         <div class="mt-8 space-y-8">
           <template x-for="p in periods" :key="p.id">
             <div x-show="itemsFor(p.id).length>0">
@@ -199,11 +831,14 @@
                   <h2 class="text-base font-bold text-white" x-text="p.title"></h2>
                   <p class="text-xs text-slate-500" x-text="p.range"></p>
                 </div>
+                <span class="ml-auto rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-slate-300"
+                  x-text="itemsFor(p.id).filter(i=>i.entry && i.entry.status==='taken').length + ' / ' + itemsFor(p.id).length"></span>
               </div>
 
               <div class="space-y-3">
                 <template x-for="it in itemsFor(p.id)" :key="it.key">
-                  <div class="card group relative overflow-hidden p-4 transition hover:border-white/20" :class="it.entry ? 'opacity-90' : ''">
+                  <div class="card group relative overflow-hidden p-4 transition hover:border-white/20"
+                       :class="it.entry ? 'opacity-90' : ''">
                     <div class="absolute inset-y-0 left-0 w-1" :style="`background:${it.med.color}`"></div>
                     <div class="flex flex-col gap-4 pl-2 sm:flex-row sm:items-center">
                       <div class="flex min-w-0 flex-1 items-center gap-3.5">
@@ -212,14 +847,31 @@
                         <div class="min-w-0">
                           <div class="flex items-center gap-2">
                             <span class="rounded-md bg-slate-900/70 px-2 py-0.5 text-xs font-bold tabular-nums text-slate-200" x-text="it.time"></span>
-                            <h3 class="truncate font-semibold text-white" x-text="it.med.name"></h3>
+                            <h3 class="truncate font-semibold text-white" :class="it.entry && it.entry.status==='skipped' ? 'line-through decoration-slate-500' : ''" x-text="it.med.name"></h3>
                           </div>
-                          <p class="mt-1 truncate text-sm text-slate-400"><span x-text="it.med.dose"></span></p>
+                          <p class="mt-1 truncate text-sm text-slate-400">
+                            <span x-text="it.med.dose"></span> · <span x-text="instrLabel(it.med.instruction)"></span>
+                          </p>
                         </div>
                       </div>
+
+                      <!-- Actions -->
                       <div class="flex items-center gap-2 sm:shrink-0">
                         <template x-if="!it.entry">
-                          <button class="btn btn-primary" @click="mark(it,'taken')"><span x-html="ic('check','h-4 w-4')"></span>Принял</button>
+                          <div class="flex w-full gap-2 sm:w-auto">
+                            <button class="btn btn-primary flex-1 sm:flex-none" @click="mark(it,'taken')"><span x-html="ic('check','h-4 w-4')"></span>Принял</button>
+                            <button class="btn btn-ghost flex-1 sm:flex-none" @click="mark(it,'skipped')"><span x-html="ic('skip','h-4 w-4')"></span>Пропустил</button>
+                          </div>
+                        </template>
+                        <template x-if="it.entry">
+                          <div class="flex w-full items-center justify-between gap-3 sm:w-auto">
+                            <span class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold"
+                              :class="it.entry.status==='taken' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-500/20 text-slate-300'">
+                              <span x-html="ic(it.entry.status==='taken' ? 'check' : 'skip','h-3.5 w-3.5')"></span>
+                              <span x-text="(it.entry.status==='taken' ? 'Принято в ' : 'Пропущено в ') + it.entry.at"></span>
+                            </span>
+                            <button class="btn btn-ghost !px-3 !py-1.5 text-xs" @click="undo(it)"><span x-html="ic('undo','h-3.5 w-3.5')"></span>Отменить</button>
+                          </div>
                         </template>
                       </div>
                     </div>
@@ -231,18 +883,27 @@
         </div>
       </section>
 
+      <!-- ============ TAB: CABINET ============ -->
       <section x-show="tab==='cabinet'" x-transition.opacity.duration.200ms>
         <header class="mb-6 flex items-end justify-between gap-4">
           <div>
             <p class="text-sm font-medium text-slate-400">Все препараты</p>
             <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">Моя аптечка</h1>
           </div>
-          <button class="btn btn-primary" @click="openAdd()"><span x-html="ic('plus','h-4 w-4')"></span>Добавить</button>
+          <button class="btn btn-primary" @click="openAdd()"><span x-html="ic('plus','h-4 w-4')"></span><span class="hidden sm:inline">Добавить лекарство</span><span class="sm:hidden">Добавить</span></button>
         </header>
+
+        <div x-show="meds.length===0" class="card p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic('package','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white">Аптечка пуста</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400">Добавьте первое лекарство, чтобы начать отслеживать приём.</p>
+          <button class="btn btn-primary mt-5" @click="openAdd()"><span x-html="ic('plus','h-4 w-4')"></span>Добавить лекарство</button>
+        </div>
 
         <div class="grid gap-4 sm:grid-cols-2">
           <template x-for="m in meds" :key="m.id">
             <article class="card relative overflow-hidden p-5">
+              <div class="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full blur-3xl" :style="`background:${m.color}33`"></div>
               <div class="relative flex items-start gap-3.5">
                 <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
                      :style="`background:${m.color}26;color:${m.color}`" x-html="ic(m.icon,'h-6 w-6')"></div>
@@ -250,22 +911,138 @@
                   <h3 class="truncate text-lg font-bold text-white" x-text="m.name"></h3>
                   <p class="text-sm text-slate-400" x-text="m.dose"></p>
                 </div>
+                <div class="flex shrink-0 gap-1.5">
+                  <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10 hover:text-white" @click="openEdit(m)" title="Редактировать" x-html="ic('edit','h-4 w-4')"></button>
+                  <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-rose-500/20 hover:text-rose-300" @click="confirmId=m.id" title="Удалить" x-html="ic('trash','h-4 w-4')"></button>
+                </div>
+              </div>
+
+              <div class="relative mt-4 flex flex-wrap gap-1.5">
+                <template x-for="t in m.times" :key="t">
+                  <span class="rounded-md border border-white/10 bg-slate-900/60 px-2 py-1 text-xs font-semibold tabular-nums text-slate-200" x-text="t"></span>
+                </template>
+              </div>
+
+              <div class="relative mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+                <span x-text="freqLabel(m.times.length)"></span>
+                <span class="text-slate-600">•</span>
+                <span x-text="instrLabel(m.instruction)"></span>
+              </div>
+
+              <div class="relative mt-5">
+                <div class="mb-1.5 flex items-center justify-between text-xs">
+                  <span class="text-slate-400">Осталось в пачке</span>
+                  <span class="font-semibold" :class="stockState(m).low ? 'text-amber-300' : 'text-slate-200'">
+                    <span x-text="fmt(m.stock)"></span> шт.
+                    <span class="font-normal text-slate-500" x-text="'· ~' + stockState(m).days + ' дн.'"></span>
+                  </span>
+                </div>
+                <div class="h-1.5 overflow-hidden rounded-full bg-slate-700/60">
+                  <div class="h-full rounded-full transition-all duration-500"
+                       :style="`width:${stockState(m).pct}%;background:${stockState(m).low ? '#f59e0b' : m.color}`"></div>
+                </div>
+                <p x-show="stockState(m).low" class="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-amber-300">
+                  <span x-html="ic('alert','h-3.5 w-3.5')"></span>Запас заканчивается — пора пополнить
+                </p>
               </div>
             </article>
           </template>
         </div>
       </section>
 
+      <!-- ============ TAB: HISTORY ============ -->
       <section x-show="tab==='history'" x-transition.opacity.duration.200ms>
         <header class="mb-6">
           <p class="text-sm font-medium text-slate-400">Журнал приёмов</p>
           <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">История</h1>
         </header>
+
+        <!-- 7 day stats -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="card p-4">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Соблюдение · 7 дн.</div>
+            <div class="mt-1 text-2xl font-extrabold text-emerald-400 sm:text-3xl" x-text="weekStats.adherence + '%'"></div>
+          </div>
+          <div class="card p-4">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Принято</div>
+            <div class="mt-1 text-2xl font-extrabold text-white sm:text-3xl" x-text="weekStats.taken"></div>
+          </div>
+          <div class="card p-4">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Пропущено</div>
+            <div class="mt-1 text-2xl font-extrabold text-slate-300 sm:text-3xl" x-text="weekStats.skipped"></div>
+          </div>
+        </div>
+
+        <div class="mt-5 grid gap-5 lg:grid-cols-5">
+          <!-- Calendar -->
+          <div class="card p-5 lg:col-span-3">
+            <div class="mb-4 flex items-center justify-between">
+              <h2 class="text-base font-bold capitalize text-white" x-text="monthTitle"></h2>
+              <div class="flex gap-1.5">
+                <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10" @click="shiftMonth(-1)" x-html="ic('chevL','h-4 w-4')"></button>
+                <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10 disabled:opacity-30" :disabled="isCurrentMonth" @click="shiftMonth(1)" x-html="ic('chevR','h-4 w-4')"></button>
+              </div>
+            </div>
+            <div class="mb-2 grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <template x-for="d in ['Пн','Вт','Ср','Чт','Пт','Сб','Вс']" :key="d"><div x-text="d"></div></template>
+            </div>
+            <div class="grid grid-cols-7 gap-1.5">
+              <template x-for="(c,i) in calCells" :key="i">
+                <div>
+                  <template x-if="c">
+                    <button @click="selected=c.key" :disabled="c.key>today"
+                      class="relative flex aspect-square w-full flex-col items-center justify-center rounded-xl border text-sm font-semibold transition disabled:cursor-default disabled:opacity-30"
+                      :class="[dayClass(c.key), selected===c.key ? 'ring-2 ring-indigo-400' : '']">
+                      <span x-text="c.d"></span>
+                      <span x-show="c.key===today" class="absolute bottom-1 h-1 w-1 rounded-full bg-indigo-400"></span>
+                    </button>
+                  </template>
+                </div>
+              </template>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-400">
+              <span class="inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded bg-emerald-500/60"></i>Всё принято</span>
+              <span class="inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded bg-amber-500/60"></i>Частично</span>
+              <span class="inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded bg-rose-500/60"></i>Много пропусков</span>
+            </div>
+          </div>
+
+          <!-- Day details -->
+          <div class="card p-5 lg:col-span-2">
+            <div class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">Выбранный день</div>
+            <h2 class="mb-4 text-lg font-bold capitalize text-white" x-text="longDate(selected)"></h2>
+
+            <div x-show="selectedEntries.length===0" class="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-slate-500">
+              Нет записей за этот день
+            </div>
+
+            <div class="space-y-2.5">
+              <template x-for="e in selectedEntries" :key="e.medId + e.time">
+                <div class="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-900/50 p-3">
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                       :style="`background:${e.color}26;color:${e.color}`" x-html="ic(e.icon,'h-5 w-5')"></div>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-semibold text-white" x-text="e.name"></div>
+                    <div class="truncate text-xs text-slate-400"><span x-text="e.dose"></span> · план <span x-text="e.time"></span></div>
+                  </div>
+                  <div class="text-right">
+                    <div class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold"
+                      :class="e.status==='taken' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-500/20 text-slate-300'">
+                      <span x-text="e.status==='taken' ? 'Принято' : 'Пропущено'"></span>
+                    </div>
+                    <div class="mt-1 text-[11px] tabular-nums text-slate-500" x-text="'в ' + e.at"></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
       </section>
 
     </div>
   </main>
 
+  <!-- ================= BOTTOM NAV (mobile) ================= -->
   <nav class="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-slate-900/80 px-3 pt-2 backdrop-blur-2xl md:hidden">
     <div class="mx-auto grid max-w-md grid-cols-3 gap-1">
       <template x-for="n in nav" :key="n.id">
@@ -273,15 +1050,139 @@
           :class="tab===n.id ? 'text-emerald-300' : 'text-slate-500'">
           <span class="rounded-lg px-4 py-1 transition" :class="tab===n.id ? 'bg-emerald-500/15' : ''" x-html="ic(n.icon,'h-5 w-5')"></span>
           <span x-text="n.label"></span>
+          <span x-show="n.id==='cabinet' && lowStockCount>0" class="absolute right-6 top-1 h-2 w-2 rounded-full bg-amber-400"></span>
         </button>
       </template>
     </div>
   </nav>
 
+  <!-- ================= MODAL: ADD / EDIT ================= -->
+  <div x-show="modalOpen" x-cloak class="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
+       @keydown.escape.window="closeModal()">
+    <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" x-show="modalOpen"
+         x-transition.opacity @click="closeModal()"></div>
+
+    <div class="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-white/10 bg-slate-900 shadow-2xl shadow-black/50 sm:rounded-3xl"
+         x-show="modalOpen"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-6 sm:scale-95"
+         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0 translate-y-4">
+
+      <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
+        <h2 class="text-lg font-bold text-white" x-text="editingId ? 'Редактировать лекарство' : 'Новое лекарство'"></h2>
+        <button class="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white" @click="closeModal()" x-html="ic('x','h-5 w-5')"></button>
+      </div>
+
+      <form class="flex-1 space-y-5 overflow-y-auto px-5 py-5" @submit.prevent="saveMed()">
+        <!-- Preview -->
+        <div class="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-slate-800/50 p-3.5">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl" :style="`background:${form.color}26;color:${form.color}`" x-html="ic(form.icon,'h-6 w-6')"></div>
+          <div class="min-w-0">
+            <div class="truncate font-semibold text-white" x-text="form.name || 'Название препарата'"></div>
+            <div class="truncate text-sm text-slate-400" x-text="form.dose || 'Дозировка'"></div>
+          </div>
+        </div>
+
+        <div>
+          <label class="label">Название препарата</label>
+          <input class="field" :class="errors.name ? '!border-rose-400/60' : ''" x-model="form.name" placeholder="Например, Метформин" maxlength="60">
+          <p x-show="errors.name" class="mt-1.5 text-xs text-rose-300" x-text="errors.name"></p>
+        </div>
+
+        <div>
+          <label class="label">Дозировка</label>
+          <input class="field" x-model="form.dose" placeholder="500 мг, 1 капля, 2 таблетки" maxlength="40">
+        </div>
+
+        <div>
+          <label class="label">График приёма</label>
+          <div class="space-y-2">
+            <template x-for="(t,i) in form.times" :key="i">
+              <div class="flex gap-2">
+                <input type="time" class="field" x-model="form.times[i]">
+                <button type="button" class="rounded-xl border border-white/10 bg-white/5 px-3 text-slate-400 transition hover:bg-rose-500/20 hover:text-rose-300 disabled:opacity-30"
+                  :disabled="form.times.length<=1" @click="form.times.splice(i,1)" x-html="ic('trash','h-4 w-4')"></button>
+              </div>
+            </template>
+          </div>
+          <button type="button" class="btn btn-ghost mt-2 !py-2 text-xs" @click="addTime()"><span x-html="ic('plus','h-3.5 w-3.5')"></span>Добавить время</button>
+          <p x-show="errors.times" class="mt-1.5 text-xs text-rose-300" x-text="errors.times"></p>
+        </div>
+
+        <div>
+          <label class="label">Инструкция</label>
+          <div class="grid grid-cols-2 gap-2">
+            <template x-for="o in instructions" :key="o.id">
+              <button type="button" @click="form.instruction=o.id"
+                class="rounded-xl border px-3 py-2.5 text-sm font-medium transition"
+                :class="form.instruction===o.id ? 'border-emerald-400/50 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'"
+                x-text="o.label"></button>
+            </template>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="label">Остаток в пачке, шт.</label>
+            <input type="number" min="0" step="1" class="field" x-model="form.stock">
+          </div>
+          <div>
+            <label class="label">Расход за приём, шт.</label>
+            <input type="number" min="0.5" step="0.5" class="field" x-model="form.perDose">
+          </div>
+        </div>
+
+        <div>
+          <label class="label">Цвет карточки</label>
+          <div class="flex flex-wrap gap-2.5">
+            <template x-for="c in colors" :key="c">
+              <button type="button" @click="form.color=c" class="h-9 w-9 rounded-full transition hover:scale-110"
+                :style="`background:${c}`" :class="form.color===c ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-900' : ''"></button>
+            </template>
+          </div>
+        </div>
+
+        <div>
+          <label class="label">Иконка</label>
+          <div class="grid grid-cols-8 gap-2">
+            <template x-for="k in iconChoices" :key="k">
+              <button type="button" @click="form.icon=k" class="flex aspect-square items-center justify-center rounded-xl border transition"
+                :style="form.icon===k ? `border-color:${form.color}99;background:${form.color}22;color:${form.color}` : ''"
+                :class="form.icon===k ? '' : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10'" x-html="ic(k,'h-5 w-5')"></button>
+            </template>
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-1">
+          <button type="button" class="btn btn-ghost flex-1" @click="closeModal()">Отмена</button>
+          <button type="submit" class="btn btn-primary flex-1" x-text="editingId ? 'Сохранить' : 'Добавить'"></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CONFIRM DELETE ================= -->
+  <div x-show="confirmId" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center p-4" @keydown.escape.window="confirmId=null">
+    <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" x-transition.opacity @click="confirmId=null"></div>
+    <div class="card relative w-full max-w-sm bg-slate-900 p-6 text-center" x-transition>
+      <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-300" x-html="ic('trash','h-6 w-6')"></div>
+      <h3 class="text-lg font-bold text-white">Удалить препарат?</h3>
+      <p class="mt-1.5 text-sm text-slate-400">
+        «<span class="text-slate-200" x-text="confirmMed ? confirmMed.name : ''"></span>» будет удалён из аптечки и расписания. Записи в истории сохранятся.
+      </p>
+      <div class="mt-6 flex gap-3">
+        <button class="btn btn-ghost flex-1" @click="confirmId=null">Отмена</button>
+        <button class="btn btn-danger flex-1" @click="removeMed()">Удалить</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ================= РАЗДЕЛ: СПОРТ ================= -->
 <div x-data="sportApp()" x-init="init()" x-cloak x-show="view==='sport'" class="theme-sport min-h-screen">
+
+  <!-- ================= SIDEBAR (desktop) ================= -->
   <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-slate-900/60 p-5 backdrop-blur-2xl md:flex">
     <div class="mb-8 flex items-center gap-3 px-1">
       <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-sky-400 text-slate-950 shadow-lg shadow-indigo-500/20">
@@ -292,168 +1193,1619 @@
         <div class="text-xs text-slate-400">Трекер тренировок</div>
       </div>
     </div>
+
+    <nav class="space-y-1.5">
+      <template x-for="n in nav" :key="n.id">
+        <button @click="go(n.id)"
+          class="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition"
+          :class="tab===n.id ? 'bg-indigo-500/10 text-indigo-300 ring-1 ring-indigo-400/20' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'">
+          <span x-html="ic(n.icon,'h-[18px] w-[18px]')"></span>
+          <span x-text="n.label"></span>
+        </button>
+      </template>
+    </nav>
+
     <button type="button" @click="view='home'; tick++; window.scrollTo(0,0)" class="mt-4 flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-white/5 hover:text-slate-200">
       <span x-html="ic('chevL','h-[18px] w-[18px]')"></span>На главную
     </button>
+
+    <div class="mt-auto card p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Сегодня</div>
+      <div class="mt-1 text-2xl font-bold text-white"><span x-text="stats.done"></span><span class="text-slate-500"> / <span x-text="stats.total"></span></span></div>
+      <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-700/60">
+        <div class="h-full rounded-full bg-emerald-400 transition-all duration-500" :style="`width:${stats.pctDone}%`"></div>
+      </div>
+    </div>
   </aside>
 
+  <!-- ================= MAIN ================= -->
   <main class="mx-auto max-w-4xl px-4 pb-32 pt-6 md:ml-64 md:max-w-none md:px-10 md:pb-12 md:pt-10">
-    <button type="button" @click="view='home'; tick++; window.scrollTo(0,0)" class="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-white md:hidden">
-      <span x-html="ic('chevL','h-4 w-4')"></span>Главная
-    </button>
-    <h1 class="text-3xl font-extrabold text-white">Тренировки и Нагрузка</h1>
+    <div class="mx-auto max-w-4xl">
+
+      <!-- mobile back link -->
+      <button type="button" @click="view='home'; tick++; window.scrollTo(0,0)" class="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-white md:hidden">
+        <span x-html="ic('chevL','h-4 w-4')"></span>Главная
+      </button>
+
+      <!-- ============ TAB: TODAY ============ -->
+      <section x-show="tab==='today'" x-transition.opacity.duration.200ms>
+        <header class="mb-6">
+          <p class="text-sm font-medium capitalize text-slate-400" x-text="longDate(today)"></p>
+          <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white" x-text="greeting"></h1>
+        </header>
+
+        <!-- Progress card -->
+        <div class="card relative overflow-hidden p-5 sm:p-6">
+          <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-indigo-500/15 blur-3xl"></div>
+          <div class="flex items-center gap-5">
+            <div class="relative h-24 w-24 shrink-0">
+              <svg viewBox="0 0 80 80" class="h-24 w-24 -rotate-90">
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#334155" stroke-width="8" opacity=".6"/>
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#34d399" stroke-width="8" stroke-linecap="round"
+                  stroke-dasharray="213.63" :stroke-dashoffset="213.63 * (1 - stats.pctDone/100)"
+                  style="transition: stroke-dashoffset .6s ease"/>
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center text-lg font-bold text-white" x-text="stats.pctDone + '%'"></div>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">План на день</div>
+              <div class="mt-1 text-2xl font-bold text-white sm:text-3xl">
+                Выполнено <span class="text-emerald-400" x-text="stats.done"></span> из <span x-text="stats.total"></span>
+              </div>
+              <div class="mt-3 flex h-2 overflow-hidden rounded-full bg-slate-700/60">
+                <div class="h-full bg-emerald-400 transition-all duration-500" :style="`width:${stats.pctDone}%`"></div>
+                <div class="h-full bg-slate-400/70 transition-all duration-500" :style="`width:${stats.pctSkipped}%`"></div>
+              </div>
+              <div class="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400">
+                <span class="inline-flex items-center gap-1.5"><i class="h-2 w-2 rounded-full bg-emerald-400"></i>Выполнено: <b class="text-slate-200" x-text="stats.done"></b></span>
+                <span class="inline-flex items-center gap-1.5"><i class="h-2 w-2 rounded-full bg-slate-400"></i>Пропущено: <b class="text-slate-200" x-text="stats.skipped"></b></span>
+                <span class="inline-flex items-center gap-1.5"><i class="h-2 w-2 rounded-full bg-slate-600"></i>Осталось: <b class="text-slate-200" x-text="stats.pending"></b></span>
+              </div>
+            </div>
+          </div>
+
+          <div x-show="nextWorkout" class="mt-5 flex items-center gap-3 rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 text-sm">
+            <span class="text-indigo-300" x-html="ic('clock','h-4 w-4')"></span>
+            <span class="text-slate-400">Следующая тренировка:</span>
+            <span class="font-semibold text-white" x-text="nextWorkout ? nextWorkout.time + ' · ' + nextWorkout.w.name : ''"></span>
+          </div>
+          <div x-show="stats.total>0 && stats.pending===0" class="mt-5 flex items-center gap-3 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
+            <span x-html="ic('check','h-4 w-4')"></span> План на сегодня закрыт. Отличная работа!
+          </div>
+        </div>
+
+        <!-- Empty states -->
+        <div x-show="schedule.length===0" class="card mt-6 p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic(workouts.length ? 'moon' : 'dumbbell','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white" x-text="workouts.length ? 'Сегодня день отдыха' : 'Тренировок пока нет'"></h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400" x-text="workouts.length ? 'На сегодня ничего не запланировано. Восстановление — тоже часть прогресса.' : 'Добавьте первую тренировку и задайте время и дни недели.'"></p>
+          <button class="btn btn-primary mt-5" @click="go('workouts'); openAdd()"><span x-html="ic('plus','h-4 w-4')"></span>Добавить тренировку</button>
+        </div>
+
+        <!-- Periods -->
+        <div class="mt-8 space-y-8">
+          <template x-for="p in periods" :key="p.id">
+            <div x-show="itemsFor(p.id).length>0">
+              <div class="mb-3 flex items-center gap-3">
+                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-slate-300" x-html="ic(p.icon,'h-[18px] w-[18px]')"></div>
+                <div>
+                  <h2 class="text-base font-bold text-white" x-text="p.title"></h2>
+                  <p class="text-xs text-slate-500" x-text="p.range"></p>
+                </div>
+                <span class="ml-auto rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-slate-300"
+                  x-text="itemsFor(p.id).filter(i=>i.entry && i.entry.status==='done').length + ' / ' + itemsFor(p.id).length"></span>
+              </div>
+
+              <div class="space-y-3">
+                <template x-for="it in itemsFor(p.id)" :key="it.key">
+                  <div class="card relative overflow-hidden p-4 transition hover:border-white/20" :class="it.entry ? 'opacity-90' : ''">
+                    <div class="absolute inset-y-0 left-0 w-1" :style="`background:${it.w.color}`"></div>
+                    <div class="flex flex-col gap-4 pl-2 sm:flex-row sm:items-center">
+                      <div class="flex min-w-0 flex-1 items-center gap-3.5">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                             :style="`background:${it.w.color}26;color:${it.w.color}`" x-html="ic(it.w.icon,'h-6 w-6')"></div>
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-2">
+                            <span class="rounded-md bg-slate-900/70 px-2 py-0.5 text-xs font-bold tabular-nums text-slate-200" x-text="it.time"></span>
+                            <h3 class="truncate font-semibold text-white" :class="it.entry && it.entry.status==='skipped' ? 'line-through decoration-slate-500' : ''" x-text="it.w.name"></h3>
+                          </div>
+                          <p class="mt-1 truncate text-sm text-slate-400">Цель: <span class="font-semibold text-slate-200" x-text="fmt(it.w.target) + ' ' + it.w.unit"></span></p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2 sm:shrink-0">
+                        <template x-if="!it.entry">
+                          <div class="flex w-full gap-2 sm:w-auto">
+                            <button class="btn btn-done flex-1 sm:flex-none" @click="mark(it,'done')"><span x-html="ic('check','h-4 w-4')"></span>Выполнил</button>
+                            <button class="btn btn-ghost flex-1 sm:flex-none" @click="mark(it,'skipped')"><span x-html="ic('skip','h-4 w-4')"></span>Пропустил</button>
+                          </div>
+                        </template>
+                        <template x-if="it.entry">
+                          <div class="flex w-full items-center justify-between gap-3 sm:w-auto">
+                            <span class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold"
+                              :class="it.entry.status==='done' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-500/20 text-slate-300'">
+                              <span x-html="ic(it.entry.status==='done' ? 'check' : 'skip','h-3.5 w-3.5')"></span>
+                              <span x-text="(it.entry.status==='done' ? 'Выполнено в ' : 'Пропущено в ') + it.entry.at"></span>
+                            </span>
+                            <button class="btn btn-ghost !px-3 !py-1.5 text-xs" @click="undo(it)"><span x-html="ic('undo','h-3.5 w-3.5')"></span>Отменить</button>
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
+
+      <!-- ============ TAB: WORKOUTS ============ -->
+      <section x-show="tab==='workouts'" x-transition.opacity.duration.200ms>
+        <header class="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <p class="text-sm font-medium text-slate-400">Все активности</p>
+            <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">Тренировки</h1>
+          </div>
+          <button class="btn btn-primary" @click="openAdd()"><span x-html="ic('plus','h-4 w-4')"></span><span class="hidden sm:inline">Добавить тренировку</span><span class="sm:hidden">Добавить</span></button>
+        </header>
+
+        <div x-show="workouts.length===0" class="card p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic('dumbbell','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white">Список пуст</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400">Добавьте первую тренировку: отжимания, бег или ходьбу.</p>
+          <button class="btn btn-primary mt-5" @click="openAdd()"><span x-html="ic('plus','h-4 w-4')"></span>Добавить тренировку</button>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <template x-for="w in workouts" :key="w.id">
+            <article class="card relative overflow-hidden p-5">
+              <div class="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full blur-3xl" :style="`background:${w.color}33`"></div>
+              <div class="relative flex items-start gap-3.5">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                     :style="`background:${w.color}26;color:${w.color}`" x-html="ic(w.icon,'h-6 w-6')"></div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="truncate text-lg font-bold text-white" x-text="w.name"></h3>
+                  <p class="text-sm text-slate-400">Цель: <span class="font-semibold text-slate-200" x-text="fmt(w.target) + ' ' + w.unit"></span></p>
+                </div>
+                <div class="flex shrink-0 gap-1.5">
+                  <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10 hover:text-white" @click="openEdit(w)" title="Редактировать" x-html="ic('edit','h-4 w-4')"></button>
+                  <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-rose-500/20 hover:text-rose-300" @click="confirmId=w.id" title="Удалить" x-html="ic('trash','h-4 w-4')"></button>
+                </div>
+              </div>
+
+              <div class="relative mt-4 flex flex-wrap gap-1.5">
+                <template x-for="t in w.times" :key="t">
+                  <span class="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-slate-900/60 px-2 py-1 text-xs font-semibold tabular-nums text-slate-200">
+                    <span class="text-slate-500" x-html="ic('clock','h-3 w-3')"></span><span x-text="t"></span>
+                  </span>
+                </template>
+              </div>
+
+              <div class="relative mt-3 flex gap-1">
+                <template x-for="(d,i) in dayNames" :key="i">
+                  <span class="flex h-7 w-8 items-center justify-center rounded-md text-[11px] font-semibold"
+                        :style="w.days.includes(i) ? `background:${w.color}26;color:${w.color}` : ''"
+                        :class="w.days.includes(i) ? '' : 'bg-white/5 text-slate-600'" x-text="d"></span>
+                </template>
+              </div>
+
+              <div class="relative mt-5">
+                <div class="mb-1.5 flex items-center justify-between text-xs">
+                  <span class="text-slate-400">На этой неделе</span>
+                  <span class="font-semibold text-slate-200"><span x-text="weekDone(w)"></span> из <span x-text="weekPlan(w)"></span></span>
+                </div>
+                <div class="h-1.5 overflow-hidden rounded-full bg-slate-700/60">
+                  <div class="h-full rounded-full transition-all duration-500"
+                       :style="`width:${Math.min(100, Math.round(weekDone(w)/Math.max(1,weekPlan(w))*100))}%;background:${w.color}`"></div>
+                </div>
+              </div>
+            </article>
+          </template>
+        </div>
+      </section>
+
+      <!-- ============ TAB: HISTORY ============ -->
+      <section x-show="tab==='history'" x-transition.opacity.duration.200ms>
+        <header class="mb-6">
+          <p class="text-sm font-medium text-slate-400">Журнал тренировок</p>
+          <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">История</h1>
+        </header>
+
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="card p-4">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Соблюдение · 7 дн.</div>
+            <div class="mt-1 text-2xl font-extrabold text-emerald-400 sm:text-3xl" x-text="weekStats.adherence + '%'"></div>
+          </div>
+          <div class="card p-4">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Выполнено</div>
+            <div class="mt-1 text-2xl font-extrabold text-white sm:text-3xl" x-text="weekStats.done"></div>
+          </div>
+          <div class="card p-4">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Пропущено</div>
+            <div class="mt-1 text-2xl font-extrabold text-slate-300 sm:text-3xl" x-text="weekStats.skipped"></div>
+          </div>
+          <div class="card p-4">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Серия дней</div>
+            <div class="mt-1 flex items-center gap-1.5 text-2xl font-extrabold text-amber-400 sm:text-3xl">
+              <span x-html="ic('flame','h-6 w-6')"></span><span x-text="streak"></span>
+            </div>
+          </div>
+        </div>
+
+        <div x-show="weekTotals.length" class="card mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 px-5 py-4">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Объём за 7 дней</span>
+          <template x-for="t in weekTotals" :key="t.name">
+            <span class="inline-flex items-center gap-2 text-sm">
+              <span :style="`color:${t.color}`" x-html="ic(t.icon,'h-4 w-4')"></span>
+              <span class="text-slate-400" x-text="t.name"></span>
+              <b class="text-white" x-text="fmt(t.value) + ' ' + t.unit"></b>
+            </span>
+          </template>
+        </div>
+
+        <div class="mt-5 grid gap-5 lg:grid-cols-5">
+          <!-- Calendar -->
+          <div class="card p-5 lg:col-span-3">
+            <div class="mb-4 flex items-center justify-between">
+              <h2 class="text-base font-bold capitalize text-white" x-text="monthTitle"></h2>
+              <div class="flex gap-1.5">
+                <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10" @click="shiftMonth(-1)" x-html="ic('chevL','h-4 w-4')"></button>
+                <button class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10 disabled:opacity-30" :disabled="isCurrentMonth" @click="shiftMonth(1)" x-html="ic('chevR','h-4 w-4')"></button>
+              </div>
+            </div>
+            <div class="mb-2 grid grid-cols-7 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <template x-for="d in dayNames" :key="d"><div x-text="d"></div></template>
+            </div>
+            <div class="grid grid-cols-7 gap-1.5">
+              <template x-for="(c,i) in calCells" :key="i">
+                <div>
+                  <template x-if="c">
+                    <button @click="selected=c.key" :disabled="c.key>today"
+                      class="relative flex aspect-square w-full flex-col items-center justify-center rounded-xl border text-sm font-semibold transition disabled:cursor-default disabled:opacity-30"
+                      :class="[dayClass(c.key), selected===c.key ? 'ring-2 ring-indigo-400' : '']">
+                      <span x-text="c.d"></span>
+                      <span x-show="c.key===today" class="absolute bottom-1 h-1 w-1 rounded-full bg-indigo-400"></span>
+                    </button>
+                  </template>
+                </div>
+              </template>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-400">
+              <span class="inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded bg-emerald-500/60"></i>Всё выполнено</span>
+              <span class="inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded bg-amber-500/60"></i>Частично</span>
+              <span class="inline-flex items-center gap-1.5"><i class="h-2.5 w-2.5 rounded bg-rose-500/60"></i>Много пропусков</span>
+            </div>
+          </div>
+
+          <!-- Day details -->
+          <div class="card p-5 lg:col-span-2">
+            <div class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">Выбранный день</div>
+            <h2 class="mb-4 text-lg font-bold capitalize text-white" x-text="longDate(selected)"></h2>
+
+            <div x-show="selectedEntries.length===0" class="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-slate-500">
+              Нет записей за этот день
+            </div>
+
+            <div class="space-y-2.5">
+              <template x-for="e in selectedEntries" :key="e.wid + e.time">
+                <div class="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-900/50 p-3">
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                       :style="`background:${e.color}26;color:${e.color}`" x-html="ic(e.icon,'h-5 w-5')"></div>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-semibold text-white" x-text="e.name"></div>
+                    <div class="truncate text-xs text-slate-400"><span x-text="fmt(e.target) + ' ' + e.unit"></span> · план <span x-text="e.time"></span></div>
+                  </div>
+                  <div class="text-right">
+                    <div class="inline-flex items-center rounded-md px-2 py-1 text-[11px] font-semibold"
+                      :class="e.status==='done' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-500/20 text-slate-300'"
+                      x-text="e.status==='done' ? 'Выполнено' : 'Пропущено'"></div>
+                    <div class="mt-1 text-[11px] tabular-nums text-slate-500" x-text="'в ' + e.at"></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
   </main>
-</div>
+
+  <!-- ================= BOTTOM NAV (mobile) ================= -->
+  <nav class="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-slate-900/80 px-3 pt-2 backdrop-blur-2xl md:hidden">
+    <div class="mx-auto grid max-w-md grid-cols-3 gap-1">
+      <template x-for="n in nav" :key="n.id">
+        <button @click="go(n.id)" class="relative flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-medium transition"
+          :class="tab===n.id ? 'text-indigo-300' : 'text-slate-500'">
+          <span class="rounded-lg px-4 py-1 transition" :class="tab===n.id ? 'bg-indigo-500/15' : ''" x-html="ic(n.icon,'h-5 w-5')"></span>
+          <span x-text="n.label"></span>
+        </button>
+      </template>
+    </div>
+  </nav>
+
+  <!-- ================= MODAL: ADD / EDIT ================= -->
+  <div x-show="modalOpen" x-cloak class="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
+       @keydown.escape.window="closeModal()">
+    <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" x-show="modalOpen" x-transition.opacity @click="closeModal()"></div>
+
+    <div class="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-white/10 bg-slate-900 shadow-2xl shadow-black/50 sm:rounded-3xl"
+         x-show="modalOpen"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-6 sm:scale-95"
+         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0 translate-y-4">
+
+      <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
+        <h2 class="text-lg font-bold text-white" x-text="editingId ? 'Редактировать тренировку' : 'Новая тренировка'"></h2>
+        <button class="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white" @click="closeModal()" x-html="ic('x','h-5 w-5')"></button>
+      </div>
+
+      <form class="flex-1 space-y-5 overflow-y-auto px-5 py-5" @submit.prevent="saveWorkout()">
+        <!-- Preview -->
+        <div class="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-slate-800/50 p-3.5">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl" :style="`background:${form.color}26;color:${form.color}`" x-html="ic(form.icon,'h-6 w-6')"></div>
+          <div class="min-w-0">
+            <div class="truncate font-semibold text-white" x-text="form.name || 'Название тренировки'"></div>
+            <div class="truncate text-sm text-slate-400" x-text="'Цель: ' + (form.target || 0) + ' ' + form.unit"></div>
+          </div>
+        </div>
+
+        <!-- Presets -->
+        <div x-show="!editingId">
+          <label class="label">Быстрый выбор</label>
+          <div class="flex flex-wrap gap-2">
+            <template x-for="p in presets" :key="p.name">
+              <button type="button" @click="applyPreset(p)"
+                class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10">
+                <span :style="`color:${p.color}`" x-html="ic(p.icon,'h-4 w-4')"></span><span x-text="p.name"></span>
+              </button>
+            </template>
+          </div>
+        </div>
+
+        <div>
+          <label class="label">Название</label>
+          <input class="field" :class="errors.name ? '!border-rose-400/60' : ''" x-model="form.name" placeholder="Например, Отжимания" maxlength="50">
+          <p x-show="errors.name" class="mt-1.5 text-xs text-rose-300" x-text="errors.name"></p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="label">Цель</label>
+            <input type="number" min="0.5" step="0.5" class="field" :class="errors.target ? '!border-rose-400/60' : ''" x-model="form.target">
+          </div>
+          <div>
+            <label class="label">Единица</label>
+            <div class="grid grid-cols-3 gap-1.5">
+              <template x-for="u in units" :key="u">
+                <button type="button" @click="form.unit=u" class="rounded-xl border px-1 py-2.5 text-sm font-medium transition"
+                  :class="form.unit===u ? 'border-indigo-400/50 bg-indigo-500/10 text-indigo-300' : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'" x-text="u"></button>
+              </template>
+            </div>
+          </div>
+        </div>
+        <p x-show="errors.target" class="-mt-3 text-xs text-rose-300" x-text="errors.target"></p>
+
+        <div>
+          <label class="label">Время тренировки</label>
+          <div class="space-y-2">
+            <template x-for="(t,i) in form.times" :key="i">
+              <div class="flex gap-2">
+                <input type="time" class="field" x-model="form.times[i]">
+                <button type="button" class="rounded-xl border border-white/10 bg-white/5 px-3 text-slate-400 transition hover:bg-rose-500/20 hover:text-rose-300 disabled:opacity-30"
+                  :disabled="form.times.length<=1" @click="form.times.splice(i,1)" x-html="ic('trash','h-4 w-4')"></button>
+              </div>
+            </template>
+          </div>
+          <button type="button" class="btn btn-ghost mt-2 !py-2 text-xs" @click="addTime()"><span x-html="ic('plus','h-3.5 w-3.5')"></span>Добавить время</button>
+          <p x-show="errors.times" class="mt-1.5 text-xs text-rose-300" x-text="errors.times"></p>
+        </div>
+
+        <div>
+          <label class="label">Дни недели</label>
+          <div class="grid grid-cols-7 gap-1.5">
+            <template x-for="(d,i) in dayNames" :key="i">
+              <button type="button" @click="toggleDay(i)" class="rounded-xl border py-2.5 text-sm font-semibold transition"
+                :class="form.days.includes(i) ? 'border-indigo-400/50 bg-indigo-500/10 text-indigo-300' : 'border-white/10 bg-white/5 text-slate-500 hover:bg-white/10'" x-text="d"></button>
+            </template>
+          </div>
+          <p x-show="errors.days" class="mt-1.5 text-xs text-rose-300" x-text="errors.days"></p>
+        </div>
+
+        <div>
+          <label class="label">Цвет карточки</label>
+          <div class="flex flex-wrap gap-2.5">
+            <template x-for="c in colors" :key="c">
+              <button type="button" @click="form.color=c" class="h-9 w-9 rounded-full transition hover:scale-110"
+                :style="`background:${c}`" :class="form.color===c ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-900' : ''"></button>
+            </template>
+          </div>
+        </div>
+
+        <div>
+          <label class="label">Иконка</label>
+          <div class="grid grid-cols-8 gap-2">
+            <template x-for="k in iconChoices" :key="k">
+              <button type="button" @click="form.icon=k" class="flex aspect-square items-center justify-center rounded-xl border transition"
+                :style="form.icon===k ? `border-color:${form.color}99;background:${form.color}22;color:${form.color}` : ''"
+                :class="form.icon===k ? '' : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10'" x-html="ic(k,'h-5 w-5')"></button>
+            </template>
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-1">
+          <button type="button" class="btn btn-ghost flex-1" @click="closeModal()">Отмена</button>
+          <button type="submit" class="btn btn-primary flex-1" x-text="editingId ? 'Сохранить' : 'Добавить'"></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CONFIRM DELETE ================= -->
+  <div x-show="confirmId" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center p-4" @keydown.escape.window="confirmId=null">
+    <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" x-transition.opacity @click="confirmId=null"></div>
+    <div class="card relative w-full max-w-sm bg-slate-900 p-6 text-center" x-transition>
+      <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-300" x-html="ic('trash','h-6 w-6')"></div>
+      <h3 class="text-lg font-bold text-white">Удалить тренировку?</h3>
+      <p class="mt-1.5 text-sm text-slate-400">
+        «<span class="text-slate-200" x-text="confirmWorkout ? confirmWorkout.name : ''"></span>» будет удалена из плана. Записи в истории сохранятся.
+      </p>
+      <div class="mt-6 flex gap-3">
+        <button class="btn btn-ghost flex-1" @click="confirmId=null">Отмена</button>
+        <button class="btn btn-danger flex-1" @click="removeWorkout()">Удалить</button>
+      </div>
+    </div>
+  </div>
 
 </div>
 
-<!-- Web Push & Alpine.js Scripts -->
+</div>
+
 <script>
-const PUBLIC_VAPID_KEY = 'BJNPsBLXpVqCEOJz-2OM_1ICVYVpIFlyFfIRwd8pKeYjQavcZF2Nx5DCOwwXFl3Ml6SGfyG3kz24pQjaoVpDewY';
+/* ---------- Icon set (Lucide-style inline SVG) ---------- */
+const ICONS = {
+  pill: '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
+  droplet: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  syringe: '<path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/>',
+  heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+  leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  sunrise: '<path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+  sunset: '<path d="M12 10V2"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m16 6-4 4-4-4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  edit: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+  trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+  home: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+  package: '<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  skip: '<path d="m5 4 10 8-10 8z"/><path d="M19 5v14"/>',
+  undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',
+  alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  chevL: '<path d="m15 18-6-6 6-6"/>',
+  chevR: '<path d="m9 18 6-6-6-6"/>'
+};
+
+/* ---------- Helpers ---------- */
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const hm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const MED_KEY = 'medtracker.v1';
+
+function medApp() {
+  return {
+    /* ---------- State ---------- */
+    tab: 'today',
+    today: ymd(new Date()),
+    meds: [],
+    logs: {},            // { 'YYYY-MM-DD': { 'medId|HH:MM': {medId,name,dose,time,color,icon,status,at} } }
+    selected: ymd(new Date()),
+    cal: { y: new Date().getFullYear(), m: new Date().getMonth() },
+
+    modalOpen: false,
+    editingId: null,
+    confirmId: null,
+    errors: {},
+    form: {},
+
+    /* ---------- Static config ---------- */
+    nav: [
+      { id: 'today',   label: 'Сегодня',  icon: 'home' },
+      { id: 'cabinet', label: 'Аптечка',  icon: 'package' },
+      { id: 'history', label: 'История',  icon: 'clock' }
+    ],
+    periods: [
+      { id: 'morning', title: 'Утро',   range: '05:00 – 11:59', icon: 'sunrise' },
+      { id: 'day',     title: 'День',   range: '12:00 – 17:59', icon: 'sun' },
+      { id: 'evening', title: 'Вечер',  range: '18:00 – 21:59', icon: 'sunset' },
+      { id: 'night',   title: 'Ночь',   range: '22:00 – 04:59', icon: 'moon' }
+    ],
+    instructions: [
+      { id: 'before', label: 'До еды' },
+      { id: 'with',   label: 'Во время еды' },
+      { id: 'after',  label: 'После еды' },
+      { id: 'any',    label: 'Не важно' }
+    ],
+    colors: ['#10b981', '#6366f1', '#0ea5e9', '#f59e0b', '#f43f5e', '#8b5cf6', '#14b8a6', '#f97316'],
+    iconChoices: ['pill', 'droplet', 'syringe', 'heart', 'leaf', 'sun', 'moon', 'zap'],
+
+    /* ---------- Init / Storage ---------- */
+    init() {
+      this.load();
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) this.refreshToday();
+      });
+    },
+
+    refreshToday() {
+      const t = ymd(new Date());
+      if (t !== this.today) {
+        if (this.selected === this.today) this.selected = t;
+        this.today = t;
+      }
+    },
+
+    load() {
+      try {
+        const raw = localStorage.getItem(MED_KEY);
+        if (raw) {
+          const data = JSON.parse(raw);
+          if (Array.isArray(data.meds) && data.logs && typeof data.logs === 'object') {
+            this.meds = data.meds;
+            this.logs = data.logs;
+            return;
+          }
+        }
+      } catch (e) { /* fall through to seed */ }
+      this.seed();
+      this.save();
+    },
+
+    save() {
+      try {
+        localStorage.setItem(MED_KEY, JSON.stringify({ meds: this.meds, logs: this.logs }));
+      } catch (e) { /* storage unavailable */ }
+    },
+
+    seed() {
+      this.meds = [
+        { id: 'm1', name: 'Метформин', dose: '500 мг', times: ['08:00', '14:00', '20:00'], instruction: 'with',
+          color: '#10b981', icon: 'pill', stock: 53, perDose: 1 },
+        { id: 'm2', name: 'Витамин D3', dose: '1 капсула (2000 МЕ)', times: ['08:00'], instruction: 'after',
+          color: '#f59e0b', icon: 'sun', stock: 30, perDose: 1 },
+        { id: 'm3', name: 'Магний B6', dose: '2 таблетки', times: ['22:30'], instruction: 'any',
+          color: '#8b5cf6', icon: 'moon', stock: 8, perDose: 2 }
+      ];
+
+      // Demo history for the previous 6 days
+      const logs = {};
+      let idx = 0;
+      for (let d = 6; d >= 1; d--) {
+        const date = new Date();
+        date.setDate(date.getDate() - d);
+        const key = ymd(date);
+        logs[key] = {};
+        this.meds.forEach(m => m.times.forEach(t => {
+          idx++;
+          if (idx % 13 === 7) return;                         // no record
+          const status = (idx % 9 === 4) ? 'skipped' : 'taken';
+          const [h, mi] = t.split(':').map(Number);
+          const at = `${pad(h)}:${pad(Math.min(59, mi + 2 + (idx % 6)))}`;
+          logs[key][`${m.id}|${t}`] = { medId: m.id, name: m.name, dose: m.dose, time: t, color: m.color, icon: m.icon, status, at };
+        }));
+      }
+
+      // Today: morning metformin already taken
+      const m1 = this.meds[0];
+      logs[this.today] = {
+        [`m1|08:00`]: { medId: 'm1', name: m1.name, dose: m1.dose, time: '08:00', color: m1.color, icon: m1.icon, status: 'taken', at: '08:04' }
+      };
+      this.logs = logs;
+    },
+
+    /* ---------- Icons / formatting ---------- */
+    ic(name, cls = 'h-5 w-5') {
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${ICONS[name] || ICONS.pill}</svg>`;
+    },
+    instrLabel(id) { return (this.instructions.find(i => i.id === id) || { label: 'Не важно' }).label; },
+    freqLabel(n) {
+      const mod10 = n % 10, mod100 = n % 100;
+      if (mod10 === 1 && mod100 !== 11) return `${n} раз в день`;
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} раза в день`;
+      return `${n} раз в день`;
+    },
+    fmt(n) { return Number.isInteger(+n) ? String(+n) : (+n).toFixed(1); },
+    longDate(key) {
+      const [y, m, d] = key.split('-').map(Number);
+      return new Date(y, m - 1, d).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+    },
+    periodOf(time) {
+      const h = parseInt(time.slice(0, 2), 10);
+      if (h >= 5 && h < 12) return 'morning';
+      if (h >= 12 && h < 18) return 'day';
+      if (h >= 18 && h < 22) return 'evening';
+      return 'night';
+    },
+
+    /* ---------- Navigation ---------- */
+    go(id) {
+      this.tab = id;
+      this.refreshToday();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    /* ---------- TODAY ---------- */
+    get greeting() {
+      const h = new Date().getHours();
+      if (h >= 5 && h < 12) return 'Доброе утро';
+      if (h >= 12 && h < 18) return 'Добрый день';
+      if (h >= 18 && h < 23) return 'Добрый вечер';
+      return 'Доброй ночи';
+    },
+
+    get schedule() {
+      const dayLog = this.logs[this.today] || {};
+      const items = [];
+      this.meds.forEach(m => m.times.forEach(t => {
+        const key = `${m.id}|${t}`;
+        items.push({ key, med: m, time: t, period: this.periodOf(t), entry: dayLog[key] || null });
+      }));
+      return items.sort((a, b) => a.time.localeCompare(b.time) || a.med.name.localeCompare(b.med.name));
+    },
+
+    itemsFor(periodId) { return this.schedule.filter(i => i.period === periodId); },
+
+    get stats() {
+      const s = this.schedule;
+      const total = s.length;
+      const taken = s.filter(i => i.entry && i.entry.status === 'taken').length;
+      const skipped = s.filter(i => i.entry && i.entry.status === 'skipped').length;
+      return {
+        total, taken, skipped, pending: total - taken - skipped,
+        pctTaken: total ? Math.round(taken / total * 100) : 0,
+        pctSkipped: total ? Math.round(skipped / total * 100) : 0
+      };
+    },
+
+    get nextDose() {
+      const pending = this.schedule.filter(i => !i.entry);
+      if (!pending.length) return null;
+      const now = hm(new Date());
+      return pending.find(i => i.time >= now) || pending[0];
+    },
+
+    mark(it, status) {
+      if (it.entry) return;
+      if (!this.logs[this.today]) this.logs[this.today] = {};
+      this.logs[this.today][it.key] = {
+        medId: it.med.id, name: it.med.name, dose: it.med.dose, time: it.time,
+        color: it.med.color, icon: it.med.icon, status, at: hm(new Date())
+      };
+      if (status === 'taken') {
+        const m = this.meds.find(x => x.id === it.med.id);
+        if (m) m.stock = Math.max(0, +(m.stock - m.perDose).toFixed(2));
+      }
+      this.save();
+    },
+
+    undo(it) {
+      const day = this.logs[this.today];
+      if (!day || !day[it.key]) return;
+      if (day[it.key].status === 'taken') {
+        const m = this.meds.find(x => x.id === it.med.id);
+        if (m) m.stock = +(+m.stock + +m.perDose).toFixed(2);
+      }
+      delete day[it.key];
+      this.save();
+    },
+
+    /* ---------- CABINET ---------- */
+    stockState(m) {
+      const perDay = Math.max(0.01, m.times.length * m.perDose);
+      const days = Math.floor(m.stock / perDay);
+      const pct = Math.min(100, Math.round(days / 30 * 100));
+      return { days, pct: m.stock > 0 ? Math.max(pct, 4) : 0, low: days <= 5 };
+    },
+    get lowStockCount() { return this.meds.filter(m => this.stockState(m).low).length; },
+    get confirmMed() { return this.meds.find(m => m.id === this.confirmId) || null; },
+
+    blankForm() {
+      return { name: '', dose: '', times: ['08:00'], instruction: 'after', color: this.colors[0], icon: 'pill', stock: 30, perDose: 1 };
+    },
+    openAdd() {
+      this.editingId = null;
+      this.errors = {};
+      this.form = this.blankForm();
+      this.modalOpen = true;
+    },
+    openEdit(m) {
+      this.editingId = m.id;
+      this.errors = {};
+      this.form = JSON.parse(JSON.stringify(m));
+      this.modalOpen = true;
+    },
+    closeModal() { this.modalOpen = false; },
+    addTime() {
+      const last = this.form.times[this.form.times.length - 1] || '08:00';
+      const h = (parseInt(last.slice(0, 2), 10) + 4) % 24;
+      this.form.times.push(`${pad(h)}:00`);
+    },
+
+    saveMed() {
+      const errors = {};
+      const name = (this.form.name || '').trim();
+      if (!name) errors.name = 'Укажите название препарата';
+      const times = [...new Set(this.form.times.filter(t => /^\d{2}:\d{2}$/.test(t)))].sort();
+      if (!times.length) errors.times = 'Добавьте хотя бы одно время приёма';
+      this.errors = errors;
+      if (Object.keys(errors).length) return;
+
+      const stock = Math.max(0, parseFloat(this.form.stock) || 0);
+      const perDose = Math.max(0.5, parseFloat(this.form.perDose) || 1);
+      const data = {
+        name, dose: (this.form.dose || '').trim() || '1 шт.', times,
+        instruction: this.form.instruction, color: this.form.color, icon: this.form.icon, stock, perDose
+      };
+
+      if (this.editingId) {
+        const i = this.meds.findIndex(m => m.id === this.editingId);
+        if (i > -1) this.meds[i] = { ...this.meds[i], ...data };
+      } else {
+        this.meds.push({ id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ...data });
+      }
+      this.save();
+      this.closeModal();
+    },
+
+    removeMed() {
+      const id = this.confirmId;
+      this.meds = this.meds.filter(m => m.id !== id);
+      this.confirmId = null;
+      this.save();
+    },
+
+    /* ---------- HISTORY ---------- */
+    entriesFor(key) {
+      return Object.values(this.logs[key] || {}).sort((a, b) => a.time.localeCompare(b.time));
+    },
+    get selectedEntries() { return this.entriesFor(this.selected); },
+
+    get weekStats() {
+      let taken = 0, skipped = 0;
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        this.entriesFor(ymd(d)).forEach(e => e.status === 'taken' ? taken++ : skipped++);
+      }
+      const total = taken + skipped;
+      return { taken, skipped, adherence: total ? Math.round(taken / total * 100) : 0 };
+    },
+
+    get monthTitle() {
+      return new Date(this.cal.y, this.cal.m, 1).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+    },
+    get isCurrentMonth() {
+      const n = new Date();
+      return this.cal.y === n.getFullYear() && this.cal.m === n.getMonth();
+    },
+    shiftMonth(delta) {
+      let m = this.cal.m + delta, y = this.cal.y;
+      if (m < 0) { m = 11; y--; }
+      if (m > 11) { m = 0; y++; }
+      this.cal = { y, m };
+    },
+    get calCells() {
+      const { y, m } = this.cal;
+      const offset = (new Date(y, m, 1).getDay() + 6) % 7;      // Monday first
+      const days = new Date(y, m + 1, 0).getDate();
+      const cells = [];
+      for (let i = 0; i < offset; i++) cells.push(null);
+      for (let d = 1; d <= days; d++) cells.push({ d, key: ymd(new Date(y, m, d)) });
+      return cells;
+    },
+    dayClass(key) {
+      const e = this.entriesFor(key);
+      if (!e.length) return 'border-white/5 bg-white/[0.03] text-slate-400 hover:bg-white/10';
+      const taken = e.filter(x => x.status === 'taken').length;
+      const ratio = taken / e.length;
+      if (ratio === 1) return 'border-emerald-400/30 bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30';
+      if (ratio >= 0.5) return 'border-amber-400/30 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30';
+      return 'border-rose-400/30 bg-rose-500/20 text-rose-200 hover:bg-rose-500/30';
+    }
+  };
+}
+</script>
+
+<script>
+/* ---------- Иконки (в стиле Lucide, инлайн-SVG) ---------- */
+const ICONS_SPORT = {
+  dumbbell: '<path d="M6.5 6.5v11"/><path d="M17.5 6.5v11"/><path d="M3 9v6"/><path d="M21 9v6"/><path d="M6.5 12h11"/>',
+  activity: '<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>',
+  footprints: '<path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/>',
+  bike: '<circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>',
+  waves: '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
+  flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  timer: '<path d="M10 2h4"/><path d="M12 14l3-3"/><circle cx="12" cy="14" r="8"/>',
+  mountain: '<path d="m8 3 4 8 5-5 5 15H2L8 3z"/>',
+  sunrise: '<path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  sunset: '<path d="M12 10V2"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m16 6-4 4-4-4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+  moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  edit: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+  trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+  home: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  skip: '<path d="m5 4 10 8-10 8z"/><path d="M19 5v14"/>',
+  undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>',
+  chevL: '<path d="m15 18-6-6 6-6"/>',
+  chevR: '<path d="m9 18 6-6-6-6"/>'
+};
+
+const dayIdx = d => (d.getDay() + 6) % 7;               // Пн = 0 … Вс = 6
+const parseKey = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
+const SPORT_KEY = 'sporttracker.v1';
+
+function sportApp() {
+  return {
+    /* ---------- State ---------- */
+    tab: 'today',
+    today: ymd(new Date()),
+    workouts: [],
+    logs: {},      // { 'YYYY-MM-DD': { 'wid|HH:MM': { wid,name,target,unit,time,color,icon,status,at } } }
+    selected: ymd(new Date()),
+    cal: { y: new Date().getFullYear(), m: new Date().getMonth() },
+    modalOpen: false,
+    editingId: null,
+    confirmId: null,
+    errors: {},
+    form: {},
+
+    /* ---------- Config ---------- */
+    nav: [
+      { id: 'today',    label: 'Сегодня',    icon: 'home' },
+      { id: 'workouts', label: 'Тренировки', icon: 'dumbbell' },
+      { id: 'history',  label: 'История',    icon: 'clock' }
+    ],
+    periods: [
+      { id: 'morning', title: 'Утро',  range: '05:00 – 11:59', icon: 'sunrise' },
+      { id: 'day',     title: 'День',  range: '12:00 – 17:59', icon: 'sun' },
+      { id: 'evening', title: 'Вечер', range: '18:00 – 21:59', icon: 'sunset' },
+      { id: 'night',   title: 'Ночь',  range: '22:00 – 04:59', icon: 'moon' }
+    ],
+    dayNames: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+    units: ['повт.', 'км', 'мин'],
+    colors: ['#6366f1', '#10b981', '#0ea5e9', '#f59e0b', '#f43f5e', '#8b5cf6', '#14b8a6', '#f97316'],
+    iconChoices: ['dumbbell', 'activity', 'footprints', 'bike', 'waves', 'flame', 'timer', 'mountain'],
+    presets: [
+      { name: 'Отжимания',  unit: 'повт.', target: 25, icon: 'dumbbell',   color: '#6366f1' },
+      { name: 'Бег',        unit: 'км',    target: 5,  icon: 'activity',   color: '#10b981' },
+      { name: 'Ходьба',     unit: 'мин',   target: 30, icon: 'footprints', color: '#0ea5e9' },
+      { name: 'Приседания', unit: 'повт.', target: 30, icon: 'flame',      color: '#f59e0b' },
+      { name: 'Велосипед',  unit: 'км',    target: 15, icon: 'bike',       color: '#14b8a6' },
+      { name: 'Плавание',   unit: 'мин',   target: 40, icon: 'waves',      color: '#8b5cf6' }
+    ],
+
+    /* ---------- Init / Storage ---------- */
+    init() {
+      this.load();
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) this.refreshToday(); });
+    },
+    refreshToday() {
+      const t = ymd(new Date());
+      if (t !== this.today) {
+        if (this.selected === this.today) this.selected = t;
+        this.today = t;
+      }
+    },
+    load() {
+      try {
+        const raw = localStorage.getItem(SPORT_KEY);
+        if (raw) {
+          const d = JSON.parse(raw);
+          if (Array.isArray(d.workouts) && d.logs && typeof d.logs === 'object') {
+            this.workouts = d.workouts; this.logs = d.logs; return;
+          }
+        }
+      } catch (e) { /* seed */ }
+      this.seed();
+      this.save();
+    },
+    save() {
+      try { localStorage.setItem(SPORT_KEY, JSON.stringify({ workouts: this.workouts, logs: this.logs })); } catch (e) {}
+    },
+    seed() {
+      this.workouts = [
+        { id: 'w1', name: 'Отжимания', target: 25, unit: 'повт.', times: ['07:30', '18:30'], days: [0, 1, 2, 3, 4, 5, 6], color: '#6366f1', icon: 'dumbbell' },
+        { id: 'w2', name: 'Бег',       target: 5,  unit: 'км',    times: ['06:45'],          days: [0, 2, 4],             color: '#10b981', icon: 'activity' },
+        { id: 'w3', name: 'Ходьба',    target: 40, unit: 'мин',   times: ['13:30', '21:30'], days: [0, 1, 2, 3, 4, 5, 6], color: '#0ea5e9', icon: 'footprints' }
+      ];
+
+      const logs = {};
+      let idx = 0;
+      for (let back = 6; back >= 1; back--) {
+        const date = new Date(); date.setDate(date.getDate() - back);
+        const key = ymd(date), di = dayIdx(date);
+        logs[key] = {};
+        this.workouts.forEach(w => {
+          if (!w.days.includes(di)) return;
+          w.times.forEach(t => {
+            idx++;
+            if (idx % 11 === 6) return;
+            const status = (idx % 7 === 3) ? 'skipped' : 'done';
+            const [h, mi] = t.split(':').map(Number);
+            const at = `${pad(h)}:${pad(Math.min(59, mi + 3 + (idx % 8)))}`;
+            logs[key][`${w.id}|${t}`] = { wid: w.id, name: w.name, target: w.target, unit: w.unit, time: t, color: w.color, icon: w.icon, status, at };
+          });
+        });
+      }
+      // Сегодня: утренняя пробежка уже выполнена (если она в плане на этот день)
+      const w2 = this.workouts[1];
+      logs[this.today] = {};
+      if (w2.days.includes(dayIdx(new Date()))) {
+        logs[this.today]['w2|06:45'] = { wid: 'w2', name: w2.name, target: w2.target, unit: w2.unit, time: '06:45', color: w2.color, icon: w2.icon, status: 'done', at: '06:52' };
+      }
+      this.logs = logs;
+    },
+
+    /* ---------- Helpers ---------- */
+    ic(name, cls = 'h-5 w-5') {
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${ICONS_SPORT[name] || ICONS_SPORT.dumbbell}</svg>`;
+    },
+    fmt(n) { return Number.isInteger(+n) ? String(+n) : (+n).toFixed(1); },
+    longDate(key) { return parseKey(key).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }); },
+    periodOf(time) {
+      const h = parseInt(time.slice(0, 2), 10);
+      if (h >= 5 && h < 12) return 'morning';
+      if (h >= 12 && h < 18) return 'day';
+      if (h >= 18 && h < 22) return 'evening';
+      return 'night';
+    },
+    go(id) { this.tab = id; this.refreshToday(); window.scrollTo({ top: 0, behavior: 'smooth' }); },
+    get greeting() {
+      const h = new Date().getHours();
+      if (h >= 5 && h < 12) return 'Доброе утро';
+      if (h >= 12 && h < 18) return 'Добрый день';
+      if (h >= 18 && h < 23) return 'Добрый вечер';
+      return 'Доброй ночи';
+    },
+
+    /* ---------- TODAY ---------- */
+    get schedule() {
+      const di = dayIdx(parseKey(this.today));
+      const dayLog = this.logs[this.today] || {};
+      const items = [];
+      this.workouts.forEach(w => {
+        if (!w.days.includes(di)) return;
+        w.times.forEach(t => {
+          const key = `${w.id}|${t}`;
+          items.push({ key, w, time: t, period: this.periodOf(t), entry: dayLog[key] || null });
+        });
+      });
+      return items.sort((a, b) => a.time.localeCompare(b.time) || a.w.name.localeCompare(b.w.name));
+    },
+    itemsFor(pid) { return this.schedule.filter(i => i.period === pid); },
+    get stats() {
+      const s = this.schedule, total = s.length;
+      const done = s.filter(i => i.entry && i.entry.status === 'done').length;
+      const skipped = s.filter(i => i.entry && i.entry.status === 'skipped').length;
+      return {
+        total, done, skipped, pending: total - done - skipped,
+        pctDone: total ? Math.round(done / total * 100) : 0,
+        pctSkipped: total ? Math.round(skipped / total * 100) : 0
+      };
+    },
+    get nextWorkout() {
+      const pending = this.schedule.filter(i => !i.entry);
+      if (!pending.length) return null;
+      const now = hm(new Date());
+      return pending.find(i => i.time >= now) || pending[0];
+    },
+    mark(it, status) {
+      if (it.entry) return;
+      if (!this.logs[this.today]) this.logs[this.today] = {};
+      this.logs[this.today][it.key] = {
+        wid: it.w.id, name: it.w.name, target: it.w.target, unit: it.w.unit, time: it.time,
+        color: it.w.color, icon: it.w.icon, status, at: hm(new Date())
+      };
+      this.save();
+    },
+    undo(it) {
+      const day = this.logs[this.today];
+      if (day && day[it.key]) { delete day[it.key]; this.save(); }
+    },
+
+    /* ---------- WORKOUTS ---------- */
+    weekPlan(w) { return w.times.length * w.days.length; },
+    weekDone(w) {
+      const now = new Date();
+      let n = 0;
+      for (let i = 0; i <= dayIdx(now); i++) {
+        const d = new Date(now); d.setDate(now.getDate() - i);
+        Object.values(this.logs[ymd(d)] || {}).forEach(e => { if (e.wid === w.id && e.status === 'done') n++; });
+      }
+      return n;
+    },
+    get confirmWorkout() { return this.workouts.find(w => w.id === this.confirmId) || null; },
+
+    blankForm() {
+      return { name: '', target: 20, unit: 'повт.', times: ['08:00'], days: [0, 1, 2, 3, 4, 5, 6], color: this.colors[0], icon: 'dumbbell' };
+    },
+    openAdd() { this.editingId = null; this.errors = {}; this.form = this.blankForm(); this.modalOpen = true; },
+    openEdit(w) { this.editingId = w.id; this.errors = {}; this.form = JSON.parse(JSON.stringify(w)); this.modalOpen = true; },
+    closeModal() { this.modalOpen = false; },
+    applyPreset(p) {
+      this.form.name = p.name; this.form.unit = p.unit; this.form.target = p.target;
+      this.form.icon = p.icon; this.form.color = p.color;
+    },
+    addTime() {
+      const last = this.form.times[this.form.times.length - 1] || '08:00';
+      this.form.times.push(`${pad((parseInt(last.slice(0, 2), 10) + 4) % 24)}:00`);
+    },
+    toggleDay(i) {
+      const k = this.form.days.indexOf(i);
+      if (k > -1) this.form.days.splice(k, 1); else { this.form.days.push(i); this.form.days.sort(); }
+    },
+    saveWorkout() {
+      const errors = {};
+      const name = (this.form.name || '').trim();
+      const target = parseFloat(this.form.target);
+      const times = [...new Set(this.form.times.filter(t => /^\d{2}:\d{2}$/.test(t)))].sort();
+      if (!name) errors.name = 'Укажите название тренировки';
+      if (!(target > 0)) errors.target = 'Цель должна быть больше нуля';
+      if (!times.length) errors.times = 'Добавьте хотя бы одно время';
+      if (!this.form.days.length) errors.days = 'Выберите хотя бы один день';
+      this.errors = errors;
+      if (Object.keys(errors).length) return;
+
+      const data = { name, target, unit: this.form.unit, times, days: [...this.form.days].sort(), color: this.form.color, icon: this.form.icon };
+      if (this.editingId) {
+        const i = this.workouts.findIndex(w => w.id === this.editingId);
+        if (i > -1) this.workouts[i] = { ...this.workouts[i], ...data };
+      } else {
+        this.workouts.push({ id: 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ...data });
+      }
+      this.save();
+      this.closeModal();
+    },
+    removeWorkout() {
+      this.workouts = this.workouts.filter(w => w.id !== this.confirmId);
+      this.confirmId = null;
+      this.save();
+    },
+
+    /* ---------- HISTORY ---------- */
+    entriesFor(key) { return Object.values(this.logs[key] || {}).sort((a, b) => a.time.localeCompare(b.time)); },
+    get selectedEntries() { return this.entriesFor(this.selected); },
+    get weekStats() {
+      let done = 0, skipped = 0;
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        this.entriesFor(ymd(d)).forEach(e => e.status === 'done' ? done++ : skipped++);
+      }
+      const total = done + skipped;
+      return { done, skipped, adherence: total ? Math.round(done / total * 100) : 0 };
+    },
+    get weekTotals() {
+      const map = {};
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        this.entriesFor(ymd(d)).forEach(e => {
+          if (e.status !== 'done') return;
+          const k = e.name + '|' + e.unit;
+          if (!map[k]) map[k] = { name: e.name, unit: e.unit, color: e.color, icon: e.icon, value: 0 };
+          map[k].value += +e.target;
+        });
+      }
+      return Object.values(map);
+    },
+    get streak() {
+      const has = key => this.entriesFor(key).some(e => e.status === 'done');
+      const d = new Date();
+      if (!has(ymd(d))) d.setDate(d.getDate() - 1);
+      let n = 0;
+      while (has(ymd(d))) { n++; d.setDate(d.getDate() - 1); }
+      return n;
+    },
+    get monthTitle() { return new Date(this.cal.y, this.cal.m, 1).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' }); },
+    get isCurrentMonth() { const n = new Date(); return this.cal.y === n.getFullYear() && this.cal.m === n.getMonth(); },
+    shiftMonth(delta) {
+      let m = this.cal.m + delta, y = this.cal.y;
+      if (m < 0) { m = 11; y--; }
+      if (m > 11) { m = 0; y++; }
+      this.cal = { y, m };
+    },
+    get calCells() {
+      const { y, m } = this.cal;
+      const offset = (new Date(y, m, 1).getDay() + 6) % 7;
+      const days = new Date(y, m + 1, 0).getDate();
+      const cells = [];
+      for (let i = 0; i < offset; i++) cells.push(null);
+      for (let d = 1; d <= days; d++) cells.push({ d, key: ymd(new Date(y, m, d)) });
+      return cells;
+    },
+    dayClass(key) {
+      const e = this.entriesFor(key);
+      if (!e.length) return 'border-white/5 bg-white/[0.03] text-slate-400 hover:bg-white/10';
+      const ratio = e.filter(x => x.status === 'done').length / e.length;
+      if (ratio === 1) return 'border-emerald-400/30 bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30';
+      if (ratio >= 0.5) return 'border-amber-400/30 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30';
+      return 'border-rose-400/30 bg-rose-500/20 text-rose-200 hover:bg-rose-500/30';
+    }
+  };
+}
+</script>
+
+<script>
+/* ---------- SHELL: главная и переключение разделов ---------- */
+const HOME_ICONS = {
+  utensils: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+  pill: '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
+  dumbbell: '<path d="M6.5 6.5v11"/><path d="M17.5 6.5v11"/><path d="M3 9v6"/><path d="M21 9v6"/><path d="M6.5 12h11"/>',
+  sprout: '<path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/>',
+  leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>'
+};
+
+const ICONS_MEAL = {
+  ...ICONS,
+  utensils: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+  apple: '<path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z"/><path d="M10 2c1 .5 2 2 2 5"/>',
+  coffee: '<path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/>',
+  soup: '<path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10"/><path d="M19.5 12 22 6"/><path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/><path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"/><path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/>',
+  cookie: '<path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/>',
+  egg: '<path d="M12 2C8 2 4 8 4 14a8 8 0 0 0 16 0c0-6-4-12-8-12"/>',
+  fish: '<path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.53-8.5-6Z"/><path d="M18 12v.5"/><path d="M16 17.93a9.77 9.77 0 0 1 0-11.86"/><path d="M7 10.67C7 8 5.58 5.97 2.73 5.5c-1 1.5-1 5 .23 6.5-1.24 1.5-1.24 5-.23 6.5C5.58 18.03 7 16 7 13.33"/>'
+};
+
+function mealApp() {
+  const KEY = 'mealtracker.v2', OLD = 'mealtracker.v1';
+  const nowT = () => hm(new Date());
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  const dIdx = k => (new Date(k + 'T00:00:00').getDay() + 6) % 7;
+  const TYPES = {
+    'Завтрак': { color: '#f59e0b', icon: 'egg' }, 'Обед': { color: '#10b981', icon: 'soup' },
+    'Ужин': { color: '#6366f1', icon: 'fish' }, 'Перекус': { color: '#f43f5e', icon: 'apple' }
+  };
+  const ALL = [0, 1, 2, 3, 4, 5, 6];
+  const n = new Date();
+  return {
+    tab: 'today', today: ymd(n), selected: ymd(n), cal: { y: n.getFullYear(), m: n.getMonth() },
+    plan: [], logs: {}, goal: 0,
+    modalOpen: false, editingId: null, confirmId: null, errors: {}, form: {},
+    exOpen: false, ex: { type: 'Перекус', name: '', kcal: '' },
+
+    nav: [{ id: 'today', label: 'Сегодня', icon: 'home' }, { id: 'plan', label: 'Рацион', icon: 'utensils' }, { id: 'history', label: 'История', icon: 'clock' }],
+    types: Object.keys(TYPES),
+    dnames: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+    periods: [
+      { id: 'morning', title: 'Утро',  range: '05:00 – 11:59', icon: 'sunrise' }, { id: 'day',   title: 'День', range: '12:00 – 17:59', icon: 'sun' },
+      { id: 'evening', title: 'Вечер', range: '18:00 – 21:59', icon: 'sunset' },  { id: 'night', title: 'Ночь', range: '22:00 – 04:59', icon: 'moon' }
+    ],
+    colors: ['#10b981', '#6366f1', '#0ea5e9', '#f59e0b', '#f43f5e', '#8b5cf6', '#14b8a6', '#f97316'],
+    iconChoices: ['utensils', 'apple', 'coffee', 'soup', 'cookie', 'egg', 'fish', 'leaf'],
+
+    /* ---------- Init / Storage ---------- */
+    init() {
+      this.load();
+      document.addEventListener('visibilitychange', () => {
+        const t = ymd(new Date());
+        if (!document.hidden && t !== this.today) { if (this.selected === this.today) this.selected = t; this.today = t; }
+      });
+    },
+    norm(p) {
+      const t = TYPES[p.type] || TYPES['Перекус'];
+      return { color: t.color, icon: t.icon, portion: '1 порция', stock: 14, perDose: 1, kcal: 0, ...p,
+        times: p.times && p.times.length ? p.times : [p.time || '08:00'], days: p.days && p.days.length ? p.days : [...ALL] };
+    },
+    load() {
+      try {
+        const d = JSON.parse(localStorage.getItem(KEY));
+        if (d && Array.isArray(d.plan)) { this.plan = d.plan.map(p => this.norm(p)); this.logs = d.logs || {}; this.goal = +d.goal || 0; return; }
+        const o = JSON.parse(localStorage.getItem(OLD));
+        if (o && Array.isArray(o.meals)) {
+          o.meals.forEach(m => { const k = 'x' + m.id; (this.logs[m.date] = this.logs[m.date] || {})[k] = { key: k, extra: true, type: m.type, name: m.text, time: m.time, kcal: m.kcal || 0, status: 'done', at: m.time }; });
+          this.save(); return;
+        }
+      } catch (e) {}
+      this.seed(); this.save();
+    },
+    save() { try { localStorage.setItem(KEY, JSON.stringify({ plan: this.plan, logs: this.logs, goal: this.goal || 0 })); } catch (e) {} },
+    seed() {
+      this.plan = [
+        { id: 'p1', type: 'Завтрак', name: 'Овсянка с бананом', portion: '250 г', kcal: 320, times: ['08:00'], stock: 12 },
+        { id: 'p2', type: 'Обед',    name: 'Куриный суп',       portion: '1 тарелка', kcal: 280, times: ['13:00'], stock: 9 },
+        { id: 'p3', type: 'Перекус', name: 'Яблоко',            portion: '1 шт.', kcal: 80, times: ['16:30'], stock: 4 },
+        { id: 'p4', type: 'Ужин',    name: 'Запечённая рыба с овощами', portion: '300 г', kcal: 410, times: ['19:00'], stock: 7 }
+      ].map(p => this.norm(p));
+      const logs = {}; let idx = 0;
+      for (let d = 6; d >= 1; d--) {
+        const date = new Date(); date.setDate(date.getDate() - d); const key = ymd(date); logs[key] = {};
+        this.plan.forEach(p => p.times.forEach(t => {
+          idx++; if (idx % 11 === 5) return;
+          const k = p.id + '|' + t, [h, mi] = t.split(':').map(Number);
+          logs[key][k] = { key: k, planId: p.id, type: p.type, name: p.name, portion: p.portion, time: t, kcal: p.kcal, color: p.color, icon: p.icon,
+            status: idx % 8 === 3 ? 'skipped' : 'done', at: `${pad(h)}:${pad(Math.min(59, mi + 3 + idx % 7))}` };
+        }));
+      }
+      const p = this.plan[0], k = 'p1|08:00';
+      logs[this.today] = { [k]: { key: k, planId: p.id, type: p.type, name: p.name, portion: p.portion, time: '08:00', kcal: p.kcal, color: p.color, icon: p.icon, status: 'done', at: '08:06' } };
+      this.logs = logs;
+    },
+
+    /* ---------- Formatting ---------- */
+    ic(name, cls = 'h-5 w-5') {
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${ICONS_MEAL[name] || ICONS_MEAL.utensils}</svg>`;
+    },
+    fmt(v) { return Number.isInteger(+v) ? String(+v) : (+v).toFixed(1); },
+    freqLabel(c) { const a = c % 10, b = c % 100; return a >= 2 && a <= 4 && (b < 12 || b > 14) ? `${c} раза в день` : `${c} раз в день`; },
+    daysLabel(d) { return d.length === 7 ? 'каждый день' : d.slice().sort().map(i => this.dnames[i]).join(', '); },
+    longDate(k) { return new Date(k + 'T00:00:00').toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }); },
+    periodOf(t) { const h = +t.slice(0, 2); return h >= 5 && h < 12 ? 'morning' : h >= 12 && h < 18 ? 'day' : h >= 18 && h < 22 ? 'evening' : 'night'; },
+    go(id) { this.tab = id; const t = ymd(new Date()); if (t !== this.today) { if (this.selected === this.today) this.selected = t; this.today = t; } window.scrollTo({ top: 0, behavior: 'smooth' }); },
+
+    /* ---------- Today ---------- */
+    get greeting() { const h = new Date().getHours(); return h >= 5 && h < 12 ? 'Доброе утро' : h >= 12 && h < 18 ? 'Добрый день' : h >= 18 && h < 23 ? 'Добрый вечер' : 'Доброй ночи'; },
+    get sortedPlan() { return [...this.plan].sort((a, b) => a.times[0].localeCompare(b.times[0])); },
+    get todayLog() { return this.logs[this.today] || {}; },
+    get schedule() {
+      const i = dIdx(this.today), L = this.todayLog, items = [];
+      this.plan.filter(p => p.days.includes(i)).forEach(p => p.times.forEach(t => {
+        const key = p.id + '|' + t;
+        items.push({ key, p, time: t, period: this.periodOf(t), entry: L[key] || (p.times.length === 1 ? L[p.id] : null) || null });
+      }));
+      return items.sort((a, b) => a.time.localeCompare(b.time) || a.p.name.localeCompare(b.p.name));
+    },
+    itemsFor(pid) { return this.schedule.filter(i => i.period === pid); },
+    get extras() { return Object.values(this.todayLog).filter(e => e.extra).map(e => ({ ...TYPES[e.type] && { color: TYPES[e.type].color, icon: 'cookie' }, ...e })).sort((a, b) => a.time.localeCompare(b.time)); },
+    get stats() {
+      const s = this.schedule, total = s.length, st = v => s.filter(i => i.entry && i.entry.status === v).length;
+      const done = st('done'), skipped = st('skipped'), pct = v => total ? Math.round(v / total * 100) : 0;
+      return { total, done, skipped, pending: total - done - skipped, pctDone: pct(done), pctSkipped: pct(skipped) };
+    },
+    get nextMeal() { const p = this.schedule.filter(i => !i.entry); if (!p.length) return null; const t = nowT(); return p.find(i => i.time >= t) || p[0]; },
+    kcalOf(k) { return Object.values(this.logs[k] || {}).filter(e => e.status === 'done').reduce((s, e) => s + (+e.kcal || 0), 0); },
+    mark(it, status) {
+      if (it.entry) return;
+      const p = this.plan.find(x => x.id === it.p.id); if (!p) return;
+      (this.logs[this.today] = this.logs[this.today] || {})[it.key] = { key: it.key, planId: p.id, type: p.type, name: p.name, portion: p.portion, time: it.time, kcal: +p.kcal || 0, color: p.color, icon: p.icon, status, at: nowT() };
+      if (status === 'done') p.stock = Math.max(0, +(p.stock - p.perDose).toFixed(2));
+      this.save();
+    },
+    undo(it) {
+      const day = this.logs[this.today]; if (!day) return;
+      const k = day[it.key] ? it.key : it.p.id, e = day[k]; if (!e) return;
+      if (e.status === 'done' && e.planId) { const p = this.plan.find(x => x.id === e.planId); if (p) p.stock = +(+p.stock + +p.perDose).toFixed(2); }
+      delete day[k]; this.save();
+    },
+    addExtra() {
+      const name = this.ex.name.trim(); if (!name) return;
+      const key = 'x' + uid(), t = TYPES[this.ex.type] || TYPES['Перекус'];
+      (this.logs[this.today] = this.logs[this.today] || {})[key] = { key, extra: true, type: this.ex.type, name, time: nowT(), kcal: +this.ex.kcal || 0, color: t.color, icon: 'cookie', status: 'done', at: nowT() };
+      this.ex.name = ''; this.ex.kcal = ''; this.exOpen = false; this.save();
+    },
+
+    /* ---------- Plan ---------- */
+    stockState(p) {
+      const perDay = Math.max(0.01, p.times.length * p.perDose * p.days.length / 7), days = Math.floor(p.stock / perDay), pct = Math.min(100, Math.round(days / 30 * 100));
+      return { days, pct: p.stock > 0 ? Math.max(pct, 4) : 0, low: days <= 5 };
+    },
+    get lowStockCount() { return this.plan.filter(p => this.stockState(p).low).length; },
+    get confirmItem() { return this.plan.find(p => p.id === this.confirmId) || null; },
+    openAdd() {
+      const t = TYPES['Завтрак'];
+      this.editingId = null; this.errors = {};
+      this.form = { type: 'Завтрак', name: '', portion: '', kcal: '', times: ['08:00'], days: [...ALL], color: t.color, icon: t.icon, stock: 14, perDose: 1 };
+      this.modalOpen = true;
+    },
+    openEdit(p) { this.editingId = p.id; this.errors = {}; this.form = JSON.parse(JSON.stringify({ ...p, kcal: p.kcal || '' })); this.modalOpen = true; },
+    closeModal() { this.modalOpen = false; },
+    setType(t) { this.form.type = t; if (!this.editingId) { this.form.color = TYPES[t].color; this.form.icon = TYPES[t].icon; } },
+    addTime() { const last = this.form.times[this.form.times.length - 1] || '08:00'; this.form.times.push(`${pad((parseInt(last.slice(0, 2), 10) + 4) % 24)}:00`); },
+    toggleDay(i) { const d = this.form.days; this.form.days = d.includes(i) ? d.filter(x => x !== i) : [...d, i]; },
+    savePlan() {
+      const f = this.form, errors = {}, name = (f.name || '').trim();
+      if (!name) errors.name = 'Укажите название блюда';
+      const times = [...new Set(f.times.filter(t => /^\d{2}:\d{2}$/.test(t)))].sort();
+      if (!times.length) errors.times = 'Добавьте хотя бы одно время приёма';
+      if (!f.days.length) errors.days = 'Выберите хотя бы один день';
+      this.errors = errors; if (Object.keys(errors).length) return;
+      const data = { type: f.type, name, portion: (f.portion || '').trim() || '1 порция', kcal: Math.max(0, +f.kcal || 0), times, days: [...f.days],
+        color: f.color, icon: f.icon, stock: Math.max(0, parseFloat(f.stock) || 0), perDose: Math.max(0.5, parseFloat(f.perDose) || 1) };
+      if (this.editingId) { const i = this.plan.findIndex(p => p.id === this.editingId); if (i > -1) this.plan[i] = { ...this.plan[i], ...data }; }
+      else this.plan.push({ id: 'p' + uid(), ...data });
+      this.save(); this.closeModal();
+    },
+    removePlan() { this.plan = this.plan.filter(p => p.id !== this.confirmId); this.confirmId = null; this.save(); },
+
+    /* ---------- History ---------- */
+    entriesFor(k) { return Object.values(this.logs[k] || {}).map(e => ({ color: '#f43f5e', icon: 'utensils', ...e })).sort((a, b) => a.time.localeCompare(b.time)); },
+    get selectedEntries() { return this.entriesFor(this.selected); },
+    get weekStats() {
+      let done = 0, skipped = 0, kcal = 0;
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(); d.setDate(d.getDate() - i); const k = ymd(d);
+        this.entriesFor(k).filter(e => !e.extra).forEach(e => e.status === 'done' ? done++ : skipped++);
+        kcal += this.kcalOf(k);
+      }
+      return { done, skipped, adherence: done + skipped ? Math.round(done / (done + skipped) * 100) : 0, avgKcal: Math.round(kcal / 7) };
+    },
+    get streak() {
+      const has = k => this.entriesFor(k).some(e => e.status === 'done');
+      const d = new Date(); if (!has(ymd(d))) d.setDate(d.getDate() - 1);
+      let c = 0; while (has(ymd(d))) { c++; d.setDate(d.getDate() - 1); }
+      return c;
+    },
+    get monthTitle() { return new Date(this.cal.y, this.cal.m, 1).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' }); },
+    get isCurrentMonth() { const t = new Date(); return this.cal.y === t.getFullYear() && this.cal.m === t.getMonth(); },
+    shiftMonth(delta) { let m = this.cal.m + delta, y = this.cal.y; if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; } this.cal = { y, m }; },
+    get calCells() {
+      const { y, m } = this.cal, cells = [];
+      for (let i = 0; i < (new Date(y, m, 1).getDay() + 6) % 7; i++) cells.push(null);
+      for (let d = 1; d <= new Date(y, m + 1, 0).getDate(); d++) cells.push({ d, key: ymd(new Date(y, m, d)) });
+      return cells;
+    },
+    dayClass(k) {
+      const all = this.entriesFor(k), e = all.filter(x => !x.extra);
+      if (!all.length) return 'border-white/5 bg-white/[0.03] text-slate-400 hover:bg-white/10';
+      if (!e.length) return 'border-sky-400/30 bg-sky-500/20 text-sky-200 hover:bg-sky-500/30';
+      const r = e.filter(x => x.status === 'done').length / e.length;
+      if (r === 1) return 'border-emerald-400/30 bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30';
+      if (r >= 0.5) return 'border-amber-400/30 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30';
+      return 'border-rose-400/30 bg-rose-500/20 text-rose-200 hover:bg-rose-500/30';
+    }
+  };
+}
 
 function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
+  const rawData = atob(base64);
   const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
   return outputArray;
 }
 
-let currentPushSub = null;
-
-async function subscribePush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    alert('Web Push не поддерживается или сайт открыт не с экрана "Домой"!');
-    return;
-  }
-  try {
-    const reg = await navigator.serviceWorker.register('/sw.js');
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      alert('Запрос разрешений отклонен');
-      return;
-    }
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
-    });
-    currentPushSub = sub;
-    await fetch('/api/send-push', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subscription: sub, action: 'save' })
-    });
-    alert('🔔 Push-уведомления успешно подсоединены!');
-  } catch (e) {
-    alert('Ошибка при включении пушей: ' + e.message);
-  }
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+  });
 }
-
-async function testPush() {
-  if (!currentPushSub) {
-    await subscribePush();
-    if (!currentPushSub) return;
-  }
-  try {
-    const res = await fetch('/api/send-push', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        subscription: currentPushSub,
-        action: 'send',
-        payload: { title: 'Мой День 🚀', body: 'Тестовый push успешно пришел на iPhone!' }
-      })
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert('Уведомление отправлено! Выйдите на рабочий стол iPhone.');
-    } else {
-      alert('Ошибка: ' + data.error);
-    }
-  } catch (e) {
-    alert('Ошибка сети: ' + e.message);
-  }
-}
-
-const HOME_ICONS = {
-  pill: '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
-  dumbbell: '<path d="M6.5 6.5v11"/><path d="M17.5 6.5v11"/><path d="M3 9v6"/><path d="M21 9v6"/><path d="M6.5 12h11"/>',
-  arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
-  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
-  zap: '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>'
-};
-
-const ICONS = {
-  pill: '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
-  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/>',
-  sunrise: '<path d="M12 2v8"/><path d="M22 22H2"/><path d="M16 18a4 4 0 0 0-8 0"/>',
-  check: '<path d="M20 6 9 17l-5-5"/>',
-  home: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
-  package: '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>',
-  clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
-  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
-  chevL: '<path d="m15 18-6-6 6-6"/>'
-};
-
-const pad = n => String(n).padStart(2, '0');
-const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 function shell() {
   return {
     view: 'home',
     tick: 0,
+    push: { supported: false, needsInstall: false, permission: 'default', subscribed: false, busy: false, error: '' },
     sections: [
-      { id: 'meds', title: 'Лекарства', desc: 'Приём препаратов, аптечка и история', color: '#10b981', icon: 'pill', active: true },
-      { id: 'sport', title: 'Спорт', desc: 'Тренировки, нагрузка и прогресс', color: '#6366f1', icon: 'dumbbell', active: true }
+      { id: 'meds',      title: 'Лекарства',    desc: 'Приём препаратов, аптечка и история', color: '#10b981', icon: 'pill',     active: true },
+      { id: 'sport',     title: 'Спорт',        desc: 'Тренировки, нагрузка и прогресс',     color: '#6366f1', icon: 'dumbbell', active: true },
+      { id: 'growth',    title: 'Саморазвитие', desc: 'Привычки, книги, обучение и цели',    color: '#f59e0b', icon: 'sprout',   active: true },
+      { id: 'nutrition', title: 'Приём пищи',   desc: 'Завтрак, обед, ужин и калории',        color: '#f43f5e', icon: 'utensils', active: true }
     ],
-    hic(name, cls) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${HOME_ICONS[name] || ''}</svg>`; },
-    get greeting() { return 'Добрый день'; },
-    get dateText() { return new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }); },
-    get cards() { return this.sections; },
-    openView(id) { this.view = id; window.scrollTo(0,0); }
-  };
-}
-
-function medApp() {
-  return {
-    tab: 'today',
-    today: ymd(new Date()),
-    meds: [
-      { id: 'm1', name: 'Метформин', dose: '500 мг', times: ['08:00', '20:00'], color: '#10b981', icon: 'pill' }
-    ],
-    logs: {},
-    nav: [
-      { id: 'today', label: 'Сегодня', icon: 'home' },
-      { id: 'cabinet', label: 'Аптечка', icon: 'package' },
-      { id: 'history', label: 'История', icon: 'clock' }
-    ],
-    periods: [{ id: 'morning', title: 'Утро', range: '05:00 – 11:59', icon: 'sunrise' }],
-    get greeting() { return 'Добрый день'; },
-    get stats() { return { total: 2, taken: 1, skipped: 0, pending: 1, pctTaken: 50, pctSkipped: 0 }; },
-    get lowStockCount() { return 0; },
-    itemsFor(pid) {
-      return [{ key: 'm1|08:00', med: this.meds[0], time: '08:00', entry: null }];
+    async initPush() {
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      const hasApi = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+      this.push.needsInstall = isIOS && !standalone;
+      this.push.supported = hasApi || this.push.needsInstall;
+      if (!hasApi) return;
+      this.push.permission = Notification.permission;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        this.push.subscribed = !!sub && Notification.permission === 'granted';
+      } catch (e) {}
     },
-    longDate(key) { return new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }); },
-    ic(name, cls) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${ICONS[name] || ICONS.pill}</svg>`; },
-    go(id) { this.tab = id; },
-    mark(it, st) { it.entry = { status: st }; },
-    openAdd() {},
-    init() {}
-  };
-}
+    get pushHint() {
+      const p = this.push;
+      if (p.needsInstall) return 'На iPhone нажмите «Поделиться» → «На экран \u00abДомой\u00bb», откройте приложение с главного экрана и включите уведомления.';
+      if (!p.supported) return 'Ваш браузер не поддерживает push-уведомления.';
+      if (p.permission === 'denied') return 'Уведомления запрещены. Разрешите их в настройках устройства для этого приложения.';
+      if (p.subscribed) return 'Уведомления включены.';
+      return 'Получайте напоминания о приёме лекарств и тренировках.';
+    },
+    async subscribeToPush() {
+      const p = this.push;
+      if (p.busy) return;
+      p.busy = true;
+      p.error = '';
+      try {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+          throw new Error('Push-уведомления не поддерживаются в этом браузере.');
+        }
+        const permission = await Notification.requestPermission();
+        p.permission = permission;
+        if (permission !== 'granted') throw new Error('Разрешение на уведомления не получено.');
 
-function sportApp() {
-  return {
-    tab: 'today',
-    nav: [{ id: 'today', label: 'Сегодня', icon: 'home' }],
-    ic(name, cls) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${ICONS[name] || ICONS.pill}</svg>`; },
-    init() {}
+        const reg = await navigator.serviceWorker.ready;
+        const keyResponse = await fetch('/api/send-push');
+        if (!keyResponse.ok) throw new Error('Не удалось получить VAPID-ключ с сервера.');
+        const { publicKey } = await keyResponse.json();
+        const applicationServerKey = urlBase64ToUint8Array(publicKey);
+
+        let subscription = await reg.pushManager.getSubscription();
+        if (!subscription) {
+          subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey });
+        }
+
+        const saveResponse = await fetch('/api/send-push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'save', subscription: subscription.toJSON() })
+        });
+        if (!saveResponse.ok) throw new Error('Не удалось сохранить подписку на сервере.');
+        p.subscribed = true;
+      } catch (e) {
+        p.error = e && e.message ? e.message : 'Не удалось включить уведомления.';
+      } finally {
+        p.busy = false;
+      }
+    },
+    async sendTestPush() {
+      const p = this.push;
+      p.error = '';
+      p.busy = true;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const subscription = await reg.pushManager.getSubscription();
+        if (!subscription) { p.subscribed = false; throw new Error('Подписка не найдена. Включите уведомления заново.'); }
+        const response = await fetch('/api/send-push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'send', subscription: subscription.toJSON(), title: 'Мой День', body: 'Тестовое уведомление работает!', url: '/' })
+        });
+        if (!response.ok) throw new Error('Сервер не смог отправить уведомление.');
+      } catch (e) {
+        p.error = e && e.message ? e.message : 'Ошибка отправки.';
+      } finally {
+        p.busy = false;
+      }
+    },
+    hic(name, cls) {
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${HOME_ICONS[name]}</svg>`;
+    },
+    get greeting() {
+      const h = new Date().getHours();
+      return h >= 5 && h < 12 ? 'Доброе утро' : h >= 12 && h < 18 ? 'Добрый день' : h >= 18 && h < 23 ? 'Добрый вечер' : 'Доброй ночи';
+    },
+    get dateText() {
+      return new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+    },
+    get cards() {
+      void this.tick;                       // пересчёт при возврате на главную
+      return this.sections.map(s => ({ ...s, sm: s.active ? this.summary(s.id) : null }));
+    },
+    openView(id) {
+      const s = this.sections.find(x => x.id === id);
+      if (!s || !s.active) return;
+      this.view = id;
+      this.tick++;
+      window.scrollTo(0, 0);
+    },
+    summary(id) {
+      try {
+        const key = ymd(new Date());
+        if (id === 'meds') {
+          const d = JSON.parse(localStorage.getItem('medtracker.v1'));
+          if (!d || !Array.isArray(d.meds)) return null;
+          const total = d.meds.reduce((n, m) => n + m.times.length, 0);
+          const done = Object.values((d.logs && d.logs[key]) || {}).filter(e => e.status === 'taken').length;
+          return total ? { label: 'Сегодня принято', done, total } : null;
+        }
+        if (id === 'nutrition') {
+          const d = JSON.parse(localStorage.getItem('mealtracker.v2'));
+          if (!d || !Array.isArray(d.plan)) return null;
+          const di = (new Date().getDay() + 6) % 7;
+          const total = d.plan.filter(p => p.days.includes(di)).reduce((n, p) => n + (p.times ? p.times.length : 1), 0);
+          const done = Object.values((d.logs && d.logs[key]) || {}).filter(e => !e.extra && e.status === 'done').length;
+          return total ? { label: 'Сегодня съедено', done, total } : null;
+        }
+        if (id === 'growth') {
+          const d = JSON.parse(localStorage.getItem('growthtracker.v1'));
+          if (!d || !Array.isArray(d.habits)) return null;
+          const total = d.habits.length;
+          const done = d.habits.filter(h => d.logs && d.logs[key] && d.logs[key][h.id]).length;
+          return total ? { label: 'Привычки сегодня', done, total } : null;
+        }
+        if (id === 'sport') {
+          const d = JSON.parse(localStorage.getItem('sporttracker.v1'));
+          if (!d || !Array.isArray(d.workouts)) return null;
+          const di = (new Date().getDay() + 6) % 7;
+          const total = d.workouts.filter(w => w.days.includes(di)).reduce((n, w) => n + w.times.length, 0);
+          const done = Object.values((d.logs && d.logs[key]) || {}).filter(e => e.status === 'done').length;
+          return total ? { label: 'Сегодня выполнено', done, total } : null;
+        }
+      } catch (e) {}
+      return null;
+    }
   };
 }
 </script>
+<script>
+/* ---------- САМОРАЗВИТИЕ ---------- */
+const GROWTH_KEY = 'growthtracker.v1';
+const ICONS_GROWTH = {
+  ...ICONS,
+  sprout: HOME_ICONS.sprout,
+  flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  book: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
+  trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+  brain: '<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M12 5v13"/>',
+  pen: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>',
+  droplet: ICONS.droplet, moon: ICONS.moon, sun: ICONS.sun
+};
+function growthApp() {
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  const shift = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  return {
+    tab: 'habits', today: ymd(new Date()), tick: 0,
+    habits: [], logs: {}, goals: [], books: [],
+    hOpen: false, gOpen: false, bOpen: false,
+    hForm: { name: '', icon: 'sprout', time: '' }, gForm: { name: '', target: '', unit: '' }, bForm: { title: '', author: '', pages: '' },
+    hIcons: ['sprout', 'brain', 'book', 'pen', 'droplet', 'sun', 'moon', 'flame'],
+    nav: [{ id: 'habits', label: 'Привычки', icon: 'sprout' }, { id: 'goals', label: 'Цели', icon: 'target' }, { id: 'books', label: 'Книги', icon: 'book' }],
+    ic(n, c) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${c}">${ICONS_GROWTH[n] || ''}</svg>`; },
+    init() {
+      try {
+        const d = JSON.parse(localStorage.getItem(GROWTH_KEY));
+        if (d) { this.habits = d.habits || []; this.logs = d.logs || {}; this.goals = d.goals || []; this.books = d.books || []; return; }
+      } catch (e) {}
+      this.habits = [
+        { id: uid(), name: 'Чтение 20 минут', icon: 'book' }, { id: uid(), name: 'Стакан воды утром', icon: 'droplet' }, { id: uid(), name: 'Медитация', icon: 'brain' }
+      ];
+      this.save();
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) this.today = ymd(new Date()); });
+    },
+    save() { try { localStorage.setItem(GROWTH_KEY, JSON.stringify({ habits: this.habits, logs: this.logs, goals: this.goals, books: this.books })); } catch (e) {} },
+    longDate(k) { return parseKey(k).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }); },
+    fmt(n) { return Number.isInteger(n) ? n : n.toFixed(1); },
+    pctOf(a, b) { return b > 0 ? Math.min(100, Math.round(a / b * 100)) : 0; },
+    get sortedHabits() { return [...this.habits].sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99')); },
+    get week() { return Array.from({ length: 7 }, (_, i) => ({ key: ymd(shift(new Date(), i - 6)) })); },
+    get stats() {
+      const total = this.habits.length, l = this.logs[this.today] || {};
+      const done = this.habits.filter(h => l[h.id]).length;
+      return { total, done, pct: total ? Math.round(done / total * 100) : 0 };
+    },
+    isDone(id) { return !!(this.logs[this.today] && this.logs[this.today][id]); },
+    toggleHabit(id) {
+      const l = this.logs[this.today] = this.logs[this.today] || {};
+      if (l[id]) delete l[id]; else l[id] = true;
+      this.logs = { ...this.logs }; this.save();
+    },
+    streak(id) {
+      let n = 0, d = new Date();
+      if (!(this.logs[ymd(d)] || {})[id]) d = shift(d, -1);
+      while ((this.logs[ymd(d)] || {})[id]) { n++; d = shift(d, -1); }
+      return n;
+    },
+    addHabit() {
+      const name = this.hForm.name.trim(); if (!name) return;
+      this.habits.push({ id: uid(), name, icon: this.hForm.icon, time: this.hForm.time || '' }); this.hForm.name = ''; this.hForm.time = ''; this.hOpen = false; this.save();
+    },
+    delHabit(id) { this.habits = this.habits.filter(h => h.id !== id); this.save(); },
+    addGoal() {
+      const name = this.gForm.name.trim(), target = +this.gForm.target; if (!name || !(target > 0)) return;
+      this.goals.push({ id: uid(), name, target, cur: 0, unit: this.gForm.unit.trim() });
+      this.gForm = { name: '', target: '', unit: '' }; this.gOpen = false; this.save();
+    },
+    step(g, dir) { const s = g.target >= 50 ? Math.round(g.target / 20) : 1; g.cur = Math.max(0, Math.min(g.target, g.cur + dir * s)); this.save(); },
+    addBook() {
+      const title = this.bForm.title.trim(), pages = +this.bForm.pages; if (!title || !(pages > 0)) return;
+      this.books.push({ id: uid(), title, author: this.bForm.author.trim(), pages, read: 0 });
+      this.bForm = { title: '', author: '', pages: '' }; this.bOpen = false; this.save();
+    },
+    readPages(b, n) { b.read = Math.min(b.pages, b.read + n); this.save(); }
+  };
+}
+</script>
+
 </body>
 </html>
