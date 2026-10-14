@@ -18,7 +18,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Unbounded:wght@400..800&display=swap" rel="stylesheet">
 <script>
   tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } }
 </script>
@@ -54,6 +54,10 @@
   .theme-meal .btn-primary:hover { background: #fb7185; }
   .theme-meal .field:focus { border-color: rgba(251,113,133,.6); box-shadow: 0 0 0 2px rgba(251,113,133,.2); }
   .theme-remind .btn-primary { background: #a855f7; color: #fff; box-shadow: 0 10px 15px -3px rgba(168,85,247,.25); }
+  /* iOS Safari: поля даты и времени игнорируют ширину и наезжают друг на друга — фиксируем размер */
+  .theme-remind input[type="date"], .theme-remind input[type="time"] { -webkit-appearance: none; appearance: none; display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; height: 2.75rem; line-height: 1.2; text-align: left; }
+  .theme-remind input[type="date"]::-webkit-date-and-time-value, .theme-remind input[type="time"]::-webkit-date-and-time-value { text-align: left; min-height: 1.2em; }
+  .theme-remind .card, .theme-remind .card * { min-width: 0; }
   .theme-remind .btn-primary:hover { background: #c084fc; }
   .theme-remind .field:focus { border-color: rgba(192,132,252,.6); box-shadow: 0 0 0 2px rgba(192,132,252,.2); }
   .theme-sport .field:focus { border-color: rgba(129,140,248,.6); box-shadow: 0 0 0 2px rgba(129,140,248,.2); }
@@ -124,6 +128,14 @@
     transition: left .5s cubic-bezier(.34,1.45,.5,1), top .5s cubic-bezier(.34,1.45,.5,1), width .5s cubic-bezier(.34,1.45,.5,1), height .5s cubic-bezier(.34,1.45,.5,1), background-color .3s ease, box-shadow .3s ease;
     transform: none; }
 
+
+  /* широкий шрифт Unbounded (есть кириллица) для заголовков */
+  h1, h2, h3, #welcome .wl-title { font-family: 'Unbounded', 'Inter', ui-sans-serif, system-ui, sans-serif; font-weight: 600 !important; letter-spacing: -.01em; }
+  h1 { font-size: clamp(1.5rem, 6.6vw, 2.4rem) !important; line-height: 1.2 !important; }
+  h2 { line-height: 1.25; }
+  .grid.content-start > button h2 { font-size: 1.15rem; }
+  #welcome .wl-title { font-size: clamp(1.8rem, 7.4vw, 4rem); letter-spacing: -.02em; }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
   }
@@ -147,58 +159,6 @@
 </head>
 
 <body class="min-h-screen font-sans antialiased text-slate-200 selection:bg-emerald-500/30">
-
-<!-- ================= РАЗДЕЛ: НАПОМИНАНИЯ ================= -->
-<div x-data="remindApp()" x-init="init()" x-cloak x-show="view==='reminders'" class="theme-remind min-h-screen">
-  <main class="mx-auto max-w-2xl px-4 pb-16 pt-6 md:px-8 md:pt-10">
-    <button type="button" @click="view='home'; tick++; window.scrollTo(0,0)" class="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-white"><span x-html="hic('chevL','h-4 w-4')"></span>Главная</button>
-
-    <header class="mb-6 flex items-center gap-3">
-      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-300"><span x-html="hic('bell','h-6 w-6')"></span></div>
-      <div><h1 class="text-3xl font-extrabold tracking-tight text-white">Напоминания</h1><p class="text-sm text-slate-400">В назначенное время придёт push-уведомление</p></div>
-    </header>
-
-    <div x-show="!push.subscribed" class="card mb-5 p-5">
-      <p class="text-sm text-slate-300" x-text="pushHint"></p>
-      <button type="button" class="btn btn-primary mt-3" x-show="push.supported && !push.needsInstall && push.permission !== 'denied'" :disabled="push.busy" @click="subscribeToPush()"><span x-text="push.busy ? 'Подключаем…' : 'Включить уведомления'"></span></button>
-      <p class="mt-3 text-sm text-rose-300" x-show="push.error" x-text="push.error"></p>
-    </div>
-
-    <div class="card p-5">
-      <label class="label">Что напомнить</label>
-      <input type="text" class="field" maxlength="200" placeholder="Например, позвонить врачу" x-model="form.title" @keydown.enter="add()">
-      <div class="mt-4 grid grid-cols-2 gap-3">
-        <div><label class="label">Дата</label><input type="date" class="field" x-model="form.date"></div>
-        <div><label class="label">Время</label><input type="time" class="field" x-model="form.time"></div>
-      </div>
-      <label class="label mt-4">Повтор</label>
-      <div class="grid grid-cols-3 gap-2">
-        <template x-for="r in repeats" :key="r.id">
-          <button type="button" class="rounded-xl border px-2 py-2 text-xs font-semibold transition"
-            :class="form.repeat===r.id ? 'border-violet-400/50 bg-violet-500/15 text-violet-200' : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10'"
-            @click="form.repeat=r.id" x-text="r.label"></button>
-        </template>
-      </div>
-      <p class="mt-3 text-sm text-rose-300" x-show="error" x-text="error"></p>
-      <button type="button" class="btn btn-primary mt-4 w-full" @click="add()"><span x-html="hic('plus','h-4 w-4')"></span>Добавить напоминание</button>
-      <p class="mt-3 text-xs text-amber-300" x-show="syncError" x-text="syncError"></p>
-    </div>
-
-    <div class="mt-6 space-y-3">
-      <div x-show="sorted.length===0" class="card p-8 text-center text-sm text-slate-400">Напоминаний пока нет. Добавьте первое выше.</div>
-      <template x-for="r in sorted" :key="r.id">
-        <div class="card flex items-center gap-3 p-4" :class="r.done ? 'opacity-50' : ''">
-          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 text-violet-300"><span x-html="hic(r.repeat==='none' ? 'bell' : 'repeat','h-5 w-5')"></span></div>
-          <div class="min-w-0 flex-1">
-            <div class="truncate text-sm font-semibold text-white" x-text="r.title"></div>
-            <div class="mt-0.5 text-xs text-slate-400"><span x-text="r.done ? 'Отправлено · ' + fmt(r.due) : fmt(r.due)"></span><span x-show="r.repeat!=='none'" x-text="' · ' + repLabel(r.repeat).toLowerCase()"></span></div>
-          </div>
-          <button type="button" class="rounded-lg p-2 text-slate-500 transition hover:bg-white/5 hover:text-rose-300" @click="remove(r.id)" aria-label="Удалить"><span x-html="hic('trash','h-4 w-4')"></span></button>
-        </div>
-      </template>
-    </div>
-  </main>
-</div>
 
 <script>
   // запрет щипка/масштабирования жестами (Safari на iOS игнорирует user-scalable)
@@ -375,6 +335,21 @@
           </div>
           <p class="mt-3 text-sm text-rose-300" x-show="push.error" x-text="push.error"></p>
         </div>
+      </div>
+    </div>
+
+    <div class="card mt-4 p-5 sm:p-6" x-data="{ snd: window.UISND ? UISND.enabled : true }">
+      <div class="flex items-center gap-4">
+        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-500/15 text-sky-300">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <h3 class="text-base font-bold text-white">Звуки интерфейса</h3>
+          <p class="mt-0.5 text-sm text-slate-400">Щелчки на вкладках и «фых» у летающего кубика</p>
+        </div>
+        <button type="button" role="switch" :aria-checked="snd" @click="snd=!snd; UISND.set(snd)" class="relative h-7 w-12 shrink-0 rounded-full transition" :class="snd ? 'bg-emerald-500' : 'bg-slate-600'">
+          <span class="absolute left-0.5 top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform" :class="snd ? 'translate-x-5' : 'translate-x-0'"></span>
+        </button>
       </div>
     </div>
 
@@ -1885,6 +1860,266 @@
 
 </div>
 
+<!-- ================= РАЗДЕЛ: НАПОМИНАНИЯ ================= -->
+<div x-data="remindApp()" x-init="init()" x-cloak class="theme-remind">
+<div x-show="view==='reminders'" class="min-h-screen">
+  <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-slate-900/60 p-5 backdrop-blur-2xl md:flex">
+    <div class="mb-8 flex items-center gap-3 px-1">
+      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-400 to-fuchsia-500 text-slate-950 shadow-lg shadow-violet-500/20" x-html="ic('bell','h-5 w-5')"></div>
+      <div><div class="text-base font-bold leading-tight text-white">Напоминания</div><div class="text-xs text-slate-400">Не забыть главное</div></div>
+    </div>
+    <nav class="space-y-1.5">
+      <template x-for="n in nav" :key="n.id">
+        <button @click="tab=n.id" class="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition"
+          :class="tab===n.id ? 'bg-violet-500/10 text-violet-300 ring-1 ring-violet-400/20' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'">
+          <span x-html="ic(n.icon,'h-[18px] w-[18px]')"></span><span x-text="n.label"></span>
+          <span x-show="n.id==='today' && pending.length>0" class="ml-auto rounded-full bg-rose-500/20 px-2 py-0.5 text-[11px] font-semibold text-rose-300" x-text="pending.length"></span>
+        </button>
+      </template>
+    </nav>
+    <button type="button" @click="view='home'; tick++; window.scrollTo(0,0)" class="mt-4 flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-white/5 hover:text-slate-200"><span x-html="ic('chevL','h-[18px] w-[18px]')"></span>На главную</button>
+    <div class="mt-auto card p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Сегодня</div>
+      <div class="mt-1 text-2xl font-bold text-white"><span x-text="stats.done"></span><span class="text-slate-500"> / <span x-text="stats.total"></span></span></div>
+      <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-700/60"><div class="h-full rounded-full bg-violet-400 transition-all duration-500" :style="`width:${stats.pct}%`"></div></div>
+    </div>
+  </aside>
+
+  <main class="mx-auto max-w-4xl px-4 pb-32 pt-6 md:ml-64 md:max-w-none md:px-10 md:pb-12 md:pt-10">
+    <div class="mx-auto max-w-4xl">
+      <button type="button" @click="view='home'; tick++; window.scrollTo(0,0)" class="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-white md:hidden"><span x-html="ic('chevL','h-4 w-4')"></span>Главная</button>
+
+      <!-- ============ TAB: TODAY ============ -->
+      <section x-show="tab==='today'" x-transition.opacity.duration.200ms>
+        <header class="mb-6">
+          <p class="text-sm font-medium capitalize text-slate-400" x-text="dateLong"></p>
+          <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">Напоминания</h1>
+        </header>
+
+        <div class="card relative overflow-hidden p-5 sm:p-6">
+          <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-violet-500/10 blur-3xl"></div>
+          <div class="relative">
+            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Сегодня выполнено</div>
+            <div class="mt-1 text-4xl font-extrabold tabular-nums text-white"><span x-text="stats.done"></span><span class="text-slate-500"> / <span x-text="stats.total"></span></span></div>
+            <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-700/60"><div class="h-full rounded-full bg-violet-400 transition-all duration-500" :style="`width:${stats.pct}%`"></div></div>
+            <p class="mt-3 text-sm text-slate-400" x-text="stats.total===0 ? 'На сегодня ничего не запланировано.' : (stats.waiting>0 ? 'Осталось сегодня: ' + stats.waiting : (pending.length>0 ? 'Есть напоминания, которые ждут отметки.' : 'Всё сделано. Отлично!'))"></p>
+          </div>
+        </div>
+
+        <div x-show="pending.length>0" class="mt-6">
+          <h2 class="mb-3 text-base font-bold text-white">Сработало</h2>
+          <div class="space-y-3">
+            <template x-for="l in pending" :key="l.id">
+              <div class="card relative overflow-hidden p-4 ring-1 ring-violet-400/30">
+                <div class="absolute inset-y-0 left-0 w-1 bg-violet-400"></div>
+                <div class="flex items-center gap-3 pl-2">
+                  <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-500/20 text-violet-300" x-html="ic('bell','h-5 w-5')"></div>
+                  <div class="min-w-0 flex-1">
+                    <h3 class="truncate font-semibold text-white" x-text="l.title"></h3>
+                    <div class="mt-0.5 text-xs text-slate-400" x-text="(l.late ? 'Пропущено · было ' : '') + fmt(l.due)"></div>
+                  </div>
+                </div>
+                <div class="mt-3 grid grid-cols-3 gap-2 pl-2">
+                  <button type="button" class="btn btn-primary !py-2 text-xs" @click="ack(l)">Готово</button>
+                  <button type="button" class="btn btn-ghost !py-2 text-xs" @click="snooze(l,10)">+10 мин</button>
+                  <button type="button" class="btn btn-ghost !py-2 text-xs" @click="snooze(l,60)">+1 час</button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <div class="mb-3 mt-6 flex items-center justify-between">
+          <h2 class="text-base font-bold text-white" x-text="editId ? 'Изменить напоминание' : 'Скоро'"></h2>
+          <button type="button" class="btn btn-ghost !py-1.5 text-xs" @click="openNew()" x-text="formOpen && !editId ? 'Закрыть' : '+ Новое'"></button>
+        </div>
+
+        <div x-show="formOpen" class="card mb-4 p-5">
+          <label class="label">Что напомнить</label>
+          <input type="text" class="field" maxlength="200" placeholder="Например, позвонить врачу" x-model="form.title" @keydown.enter="add()">
+          <div class="mt-3 flex flex-wrap gap-2">
+            <template x-for="q in quicks" :key="q.id">
+              <button type="button" class="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/10" @click="quick(q.id)" x-text="q.label"></button>
+            </template>
+          </div>
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div class="min-w-0"><label class="label">Дата</label><input type="date" class="field" x-model="form.date"></div>
+            <div class="min-w-0"><label class="label">Время</label><input type="time" class="field" x-model="form.time"></div>
+          </div>
+          <label class="label mt-4">Повтор</label>
+          <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <template x-for="r in repeats" :key="r.id">
+              <button type="button" class="rounded-xl border px-2 py-2 text-xs font-semibold transition"
+                :class="form.repeat===r.id ? 'border-violet-400/50 bg-violet-500/15 text-violet-200' : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10'"
+                @click="form.repeat=r.id" x-text="r.label"></button>
+            </template>
+          </div>
+          <p class="mt-3 text-sm text-rose-300" x-show="error" x-text="error"></p>
+          <div class="mt-4 flex gap-2">
+            <button type="button" class="btn btn-primary flex-1" @click="add()"><span x-html="ic(editId ? 'check' : 'plus','h-4 w-4')"></span><span x-text="editId ? 'Сохранить' : 'Добавить напоминание'"></span></button>
+            <button type="button" class="btn btn-ghost" x-show="editId" @click="cancelForm()">Отмена</button>
+          </div>
+        </div>
+
+        <div x-show="upcoming.length===0 && !formOpen" class="card p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic('bell','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white">Напоминаний пока нет</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400">Нажмите «+ Новое», выберите время, и приложение напомнит вам со звуком.</p>
+        </div>
+        <div class="space-y-3">
+          <template x-for="r in upcoming.slice(0,5)" :key="r.id">
+            <div class="card relative overflow-hidden p-4">
+              <div class="absolute inset-y-0 left-0 w-1" :class="r.repeat==='none' ? 'bg-violet-400' : 'bg-fuchsia-400'"></div>
+              <div class="flex items-center gap-3 pl-2">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 text-violet-300" x-html="ic(r.repeat==='none' ? 'bell' : 'repeat','h-5 w-5')"></div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="rounded-md bg-slate-900/70 px-2 py-0.5 text-xs font-bold tabular-nums text-violet-300" x-text="new Date(r.due).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})"></span>
+                    <h3 class="truncate font-semibold text-white" x-text="r.title"></h3>
+                  </div>
+                  <div class="mt-1 text-xs text-slate-400"><span x-text="until(r.due)"></span><span x-show="r.repeat!=='none'" x-text="' · ' + repLabel(r.repeat).toLowerCase()"></span><span x-show="r.snooze" class="text-amber-300"> · отложено</span></div>
+                </div>
+                <button type="button" class="rounded-lg p-2 text-slate-500 transition hover:bg-white/10 hover:text-violet-300" @click="edit(r)" aria-label="Изменить" x-html="ic('edit','h-4 w-4')"></button>
+                <button type="button" class="rounded-lg p-2 text-slate-500 transition hover:bg-rose-500/20 hover:text-rose-300" @click="remove(r.id)" aria-label="Удалить" x-html="ic('trash','h-4 w-4')"></button>
+              </div>
+            </div>
+          </template>
+        </div>
+        <button type="button" x-show="upcoming.length>5" class="mt-3 w-full rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-white/10" @click="tab='all'; window.scrollTo(0,0)" x-text="'Показать все (' + upcoming.length + ')'"></button>
+
+        <div x-show="!push.subscribed" class="card mt-6 p-5">
+          <div class="flex items-start gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 text-violet-300" x-html="ic('zap','h-5 w-5')"></div>
+            <div class="min-w-0 flex-1">
+              <h3 class="text-sm font-bold text-white">Уведомления</h3>
+              <p class="mt-1 text-xs text-slate-400">Пока приложение открыто, напоминание придёт прямо в нём: окно, звук и вибрация. Чтобы оно приходило и на закрытое приложение, включите уведомления.</p>
+              <p class="mt-2 text-xs text-slate-500" x-text="pushHint"></p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button type="button" class="btn btn-primary !py-2 text-xs" x-show="canAsk" @click="askNotify()">Разрешить уведомления</button>
+                <button type="button" class="btn btn-primary !py-2 text-xs" x-show="push.supported && !push.needsInstall && push.permission !== 'denied'" :disabled="push.busy" @click="subscribeToPush()"><span x-text="push.busy ? 'Подключаем…' : 'Включить push'"></span></button>
+                <button type="button" class="btn btn-ghost !py-2 text-xs" @click="testNotify()">Проверить</button>
+              </div>
+              <p class="mt-2 text-xs text-emerald-300" x-show="testMsg" x-text="testMsg"></p>
+              <p class="mt-2 text-xs text-rose-300" x-show="push.error" x-text="push.error"></p>
+              <p class="mt-2 text-xs text-amber-300" x-show="syncError" x-text="syncError"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: ALL ============ -->
+      <section x-show="tab==='all'" x-transition.opacity.duration.200ms>
+        <header class="mb-6">
+          <p class="text-sm font-medium text-slate-400">Запланировано</p>
+          <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">Все напоминания</h1>
+        </header>
+        <button type="button" class="btn btn-primary mb-5 w-full" @click="tab='today'; openNew(); window.scrollTo(0,0)"><span x-html="ic('plus','h-4 w-4')"></span>Новое напоминание</button>
+        <div x-show="groups.length===0" class="card p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic('list','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white">Пока пусто</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400">Здесь будут все будущие напоминания, по дням.</p>
+        </div>
+        <div class="space-y-6">
+          <template x-for="g in groups" :key="g.key">
+            <div>
+              <h2 class="mb-3 text-sm font-bold capitalize text-slate-300" x-text="g.label"></h2>
+              <div class="space-y-3">
+                <template x-for="r in g.items" :key="r.id">
+            <div class="card relative overflow-hidden p-4">
+              <div class="absolute inset-y-0 left-0 w-1" :class="r.repeat==='none' ? 'bg-violet-400' : 'bg-fuchsia-400'"></div>
+              <div class="flex items-center gap-3 pl-2">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 text-violet-300" x-html="ic(r.repeat==='none' ? 'bell' : 'repeat','h-5 w-5')"></div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="rounded-md bg-slate-900/70 px-2 py-0.5 text-xs font-bold tabular-nums text-violet-300" x-text="new Date(r.due).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})"></span>
+                    <h3 class="truncate font-semibold text-white" x-text="r.title"></h3>
+                  </div>
+                  <div class="mt-1 text-xs text-slate-400"><span x-text="until(r.due)"></span><span x-show="r.repeat!=='none'" x-text="' · ' + repLabel(r.repeat).toLowerCase()"></span><span x-show="r.snooze" class="text-amber-300"> · отложено</span></div>
+                </div>
+                <button type="button" class="rounded-lg p-2 text-slate-500 transition hover:bg-white/10 hover:text-violet-300" @click="edit(r)" aria-label="Изменить" x-html="ic('edit','h-4 w-4')"></button>
+                <button type="button" class="rounded-lg p-2 text-slate-500 transition hover:bg-rose-500/20 hover:text-rose-300" @click="remove(r.id)" aria-label="Удалить" x-html="ic('trash','h-4 w-4')"></button>
+              </div>
+            </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
+
+      <!-- ============ TAB: HISTORY ============ -->
+      <section x-show="tab==='history'" x-transition.opacity.duration.200ms>
+        <header class="mb-6 flex items-end justify-between gap-3">
+          <div>
+            <p class="text-sm font-medium text-slate-400">Что уже сработало</p>
+            <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-white">История</h1>
+          </div>
+          <div x-show="history.length>0">
+            <button type="button" class="btn btn-ghost !py-1.5 text-xs" x-show="!confirmClear" @click="confirmClear=true">Очистить</button>
+            <div class="flex gap-2" x-show="confirmClear"><button type="button" class="btn btn-ghost !py-1.5 text-xs" @click="confirmClear=false">Отмена</button><button type="button" class="btn btn-danger !py-1.5 text-xs" @click="clearHistory()">Удалить всё</button></div>
+          </div>
+        </header>
+        <div x-show="history.length===0" class="card p-10 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 text-slate-400" x-html="ic('history','h-7 w-7')"></div>
+          <h3 class="text-lg font-semibold text-white">История пуста</h3>
+          <p class="mx-auto mt-1 max-w-sm text-sm text-slate-400">Сработавшие и выполненные напоминания появятся здесь.</p>
+        </div>
+        <div class="space-y-3">
+          <template x-for="l in history" :key="l.id">
+            <div class="card flex items-center gap-3 p-4">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                :class="l.state==='done' ? 'bg-emerald-500/15 text-emerald-300' : (l.state==='snoozed' ? 'bg-amber-500/15 text-amber-300' : 'bg-slate-500/15 text-slate-400')"
+                x-html="ic(l.state==='done' ? 'check' : (l.state==='snoozed' ? 'clock' : 'alert'),'h-5 w-5')"></div>
+              <div class="min-w-0 flex-1">
+                <div class="truncate text-sm font-semibold text-white" :class="l.state==='done' ? '' : 'text-slate-300'" x-text="l.title"></div>
+                <div class="mt-0.5 text-xs text-slate-400"><span x-text="l.state==='done' ? 'Выполнено' : (l.state==='snoozed' ? 'Отложено' : 'Пропущено')"></span> · <span x-text="fmt(l.at)"></span></div>
+              </div>
+              <button type="button" class="rounded-lg p-2 text-slate-500 transition hover:bg-white/10 hover:text-violet-300" @click="reuse(l)" aria-label="Повторить" x-html="ic('undo','h-4 w-4')"></button>
+            </div>
+          </template>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <nav class="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-slate-900/80 px-3 pt-2 backdrop-blur-2xl md:hidden">
+    <div class="mx-auto grid max-w-md grid-cols-3 gap-1">
+      <template x-for="n in nav" :key="n.id">
+        <button @click="tab=n.id; window.scrollTo(0,0)" class="relative flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-medium transition" :class="tab===n.id ? 'text-violet-300' : 'text-slate-500'">
+          <span class="rounded-lg px-4 py-1 transition" x-html="ic(n.icon,'h-5 w-5')"></span><span x-text="n.label"></span>
+          <span x-show="n.id==='today' && pending.length>0" class="absolute right-5 top-1 h-2.5 w-2.5 rounded-full bg-rose-400"></span>
+        </button>
+      </template>
+    </div>
+  </nav>
+</div>
+
+  <!-- окно сработавшего напоминания: показывается поверх любого раздела -->
+  <div x-show="alerts.length>0" x-transition.opacity class="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center">
+    <div class="card w-full max-w-md p-5 ring-1 ring-violet-400/30">
+      <div class="mb-3 flex items-center gap-3">
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/20 text-violet-300" x-html="ic('bell','h-6 w-6')"></div>
+        <h2 class="text-lg font-bold text-white">Напоминание</h2>
+      </div>
+      <div class="space-y-3">
+        <template x-for="l in alerts" :key="l.id">
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div class="font-semibold text-white" x-text="l.title"></div>
+            <div class="mt-0.5 text-xs text-slate-400" x-text="(l.late ? 'Пропущено · было ' : 'Сейчас · ') + fmt(l.due)"></div>
+            <div class="mt-3 grid grid-cols-3 gap-2">
+              <button type="button" class="btn btn-primary !py-2 text-xs" @click="ack(l)">Готово</button>
+              <button type="button" class="btn btn-ghost !py-2 text-xs" @click="snooze(l,10)">+10 мин</button>
+              <button type="button" class="btn btn-ghost !py-2 text-xs" @click="snooze(l,60)">+1 час</button>
+            </div>
+          </div>
+        </template>
+      </div>
+      <button type="button" class="mt-4 w-full rounded-xl border border-white/10 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-white/5" @click="dismissAlerts()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+
 </div>
 
 <script>
@@ -2816,75 +3051,229 @@ if ('serviceWorker' in navigator) {
 }
 
 /* ---------- НАПОМИНАНИЯ ---------- */
+const REMIND_KEY = 'reminders.v1';
+const ICONS_REMIND = {
+  ...ICONS,
+  bell: HOME_ICONS.bell, repeat: HOME_ICONS.repeat,
+  list: '<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/>',
+  history: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>'
+};
 function remindApp() {
-  const KEY = 'reminders.v1', DAY = 86400000, WEEK = 7 * DAY;
+  const MIN = 60000, HOUR = 3600000, DAY = 86400000, GRACE = 2 * MIN, LATE_MAX = 36 * HOUR;
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-  const period = r => r === 'daily' ? DAY : r === 'weekly' ? WEEK : 0;
-  const nextDue = (due, rep, now) => { const p = period(rep); return p ? due + Math.ceil((now - due + 1) / p) * p : due; };
+  // следующее срабатывание повторяющегося напоминания (строго после ms)
+  const step = (r, ms) => {
+    const d = new Date(ms);
+    if (r.repeat === 'daily') d.setDate(d.getDate() + 1);
+    else if (r.repeat === 'weekly') d.setDate(d.getDate() + 7);
+    else if (r.repeat === 'weekdays') { do d.setDate(d.getDate() + 1); while (d.getDay() === 0 || d.getDay() === 6); }
+    else if (r.repeat === 'monthly') {
+      const day = r.dom || d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + 1);
+      d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()));
+    } else return ms;
+    return d.getTime();
+  };
+  const nextAfter = (r, now) => { let t = r.due, n = 0; while (t <= now && n++ < 4000) { const u = step(r, t); if (u === t) break; t = u; } return t; };
+  let actx = null;
   return {
-    items: [], error: '', syncError: '', timer: null,
-    form: { title: '', date: '', time: '', repeat: 'none' },
-    repeats: [{ id: 'none', label: 'Один раз' }, { id: 'daily', label: 'Каждый день' }, { id: 'weekly', label: 'Каждую неделю' }],
+    tab: 'today', now: Date.now(), items: [], log: [],
+    form: { title: '', date: '', time: '', repeat: 'none' }, formOpen: false, editId: null, error: '', syncError: '', testMsg: '',
+    timer: null, _inited: false, confirmClear: false,
+    repeats: [{ id: 'none', label: 'Один раз' }, { id: 'daily', label: 'Каждый день' }, { id: 'weekdays', label: 'По будням' }, { id: 'weekly', label: 'Раз в неделю' }, { id: 'monthly', label: 'Раз в месяц' }],
+    quicks: [{ id: 10, label: '+10 мин' }, { id: 30, label: '+30 мин' }, { id: 60, label: '+1 час' }, { id: 'eve', label: 'Сегодня 20:00' }, { id: 'morn', label: 'Завтра 9:00' }],
+    nav: [{ id: 'today', label: 'Сегодня', icon: 'bell' }, { id: 'all', label: 'Все', icon: 'list' }, { id: 'history', label: 'История', icon: 'history' }],
+    ic(n, c) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${c}">${ICONS_REMIND[n] || ''}</svg>`; },
+
+    /* ---------- загрузка / сохранение ---------- */
     init() {
-      try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && Array.isArray(d.items)) this.items = d.items; } catch (e) {}
-      const t = new Date(Date.now() + 3600000); t.setMinutes(0, 0, 0);
-      this.form.date = ymd(t); this.form.time = hm(t);
+      if (this._inited) return; this._inited = true;                      // Alpine вызывает init() сам, плюс x-init — второй вызов пропускаем
+      try {
+        const d = JSON.parse(localStorage.getItem(REMIND_KEY));
+        if (d && Array.isArray(d.items)) {
+          this.log = Array.isArray(d.log) ? d.log : [];
+          // старый формат: сработавшие разовые напоминания лежали в списке с done:true — переносим в историю
+          this.items = d.items.filter(r => {
+            if (!r.done) return true;
+            if (!this.log.some(l => l.rid === r.id)) this.log.push({ id: uid(), rid: r.id, title: r.title, at: r.due, state: 'done' });
+            return false;
+          });
+        }
+      } catch (e) {}
+      this.resetForm();
       this.check(); this.syncAll();
-      this.timer = setInterval(() => this.check(), 15000);
+      this.timer = setInterval(() => { this.now = Date.now(); this.check(); }, 10000);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) { this.now = Date.now(); this.check(); } });
+      // звук на iOS включается только после касания — готовим аудио при первом нажатии
+      const unlock = () => { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) {} };
+      document.addEventListener('pointerdown', unlock, { once: true });
       this.$watch('push.subscribed', v => { if (v) this.syncAll(); });
     },
-    save() { localStorage.setItem(KEY, JSON.stringify({ items: this.items })); },
-    get sorted() { return [...this.items].sort((a, b) => (a.done - b.done) || (a.due - b.due)); },
+    save() { try { localStorage.setItem(REMIND_KEY, JSON.stringify({ items: this.items, log: this.log.slice(0, 300) })); } catch (e) {} },
+    resetForm() {
+      const t = new Date(Date.now() + HOUR); t.setMinutes(0, 0, 0);
+      this.form = { title: '', date: ymd(t), time: hm(t), repeat: 'none' }; this.editId = null; this.error = '';
+    },
+
+    /* ---------- отображение ---------- */
+    get today() { void this.now; return ymd(new Date()); },
+    get dateLong() { void this.now; return new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }); },
+    get upcoming() { return [...this.items].sort((a, b) => a.due - b.due); },
+    get todayItems() { return this.upcoming.filter(r => ymd(new Date(r.due)) === this.today); },
+    get pending() { return this.log.filter(l => l.state === 'new'); },
+    get alerts() { return this.log.filter(l => l.state === 'new' && l.alert); },
+    get history() { return this.log.filter(l => l.state !== 'new').sort((a, b) => b.at - a.at).slice(0, 120); },
+    get groups() {
+      const g = [], by = {};
+      for (const r of this.upcoming) {
+        const k = ymd(new Date(r.due));
+        if (!by[k]) { by[k] = { key: k, label: this.dayLabel(r.due), items: [] }; g.push(by[k]); }
+        by[k].items.push(r);
+      }
+      return g;
+    },
+    get stats() {
+      const k = this.today;
+      const fired = this.log.filter(l => l.state !== 'missed' && l.state !== 'snoozed' && ymd(new Date(l.at)) === k);
+      const done = fired.filter(l => l.state === 'done').length;
+      const total = fired.length + this.todayItems.length;
+      return { done, total, pct: total ? Math.round(done / total * 100) : 0, waiting: this.todayItems.length };
+    },
     repLabel(id) { return (this.repeats.find(r => r.id === id) || {}).label || ''; },
+    dayLabel(ms) {
+      const d = new Date(ms), k = ymd(d), now = new Date();
+      if (k === ymd(now)) return 'Сегодня';
+      if (k === ymd(new Date(now.getTime() + DAY))) return 'Завтра';
+      return d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+    },
     fmt(ms) {
       const d = new Date(ms), k = ymd(d), now = new Date(), tm = hm(d);
       if (k === ymd(now)) return 'сегодня, ' + tm;
       if (k === ymd(new Date(now.getTime() + DAY))) return 'завтра, ' + tm;
+      if (k === ymd(new Date(now.getTime() - DAY))) return 'вчера, ' + tm;
       return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) + ', ' + tm;
     },
+    until(ms) {
+      const diff = ms - this.now;
+      if (diff <= 0) return 'сейчас';
+      const m = Math.round(diff / MIN);
+      if (m < 60) return 'через ' + Math.max(1, m) + ' мин';
+      const h = Math.floor(m / 60), mm = m % 60;
+      if (h < 24) return 'через ' + h + ' ч' + (mm ? ' ' + mm + ' мин' : '');
+      return 'через ' + Math.round(diff / DAY) + ' дн.';
+    },
+
+    /* ---------- форма ---------- */
+    quick(k) {
+      let t = new Date();
+      if (k === 'eve') { t.setHours(20, 0, 0, 0); if (t.getTime() <= Date.now()) t.setDate(t.getDate() + 1); }
+      else if (k === 'morn') { t.setDate(t.getDate() + 1); t.setHours(9, 0, 0, 0); }
+      else { t = new Date(Date.now() + k * MIN); t.setSeconds(0, 0); }
+      this.form.date = ymd(t); this.form.time = hm(t); this.form.repeat = 'none';
+    },
+    openNew() { if (this.formOpen && !this.editId) { this.formOpen = false; return; } this.resetForm(); this.formOpen = true; },
+    edit(r) {
+      const d = new Date(r.due);
+      this.form = { title: r.title, date: ymd(d), time: hm(d), repeat: r.repeat }; this.editId = r.id; this.error = ''; this.formOpen = true; this.tab = 'today';
+      this.$nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    },
+    cancelForm() { this.formOpen = false; this.resetForm(); },
     add() {
       this.error = '';
       const title = this.form.title.trim();
       if (!title) { this.error = 'Напишите, о чём напомнить.'; return; }
       if (!this.form.date || !this.form.time) { this.error = 'Укажите дату и время.'; return; }
-      const due = new Date(this.form.date + 'T' + this.form.time).getTime();
+      let due = new Date(this.form.date + 'T' + this.form.time).getTime();
       if (isNaN(due)) { this.error = 'Не удалось разобрать дату и время.'; return; }
-      if (this.form.repeat === 'none' && due <= Date.now()) { this.error = 'Это время уже прошло.'; return; }
-      this.items.push({ id: uid(), title, due: this.form.repeat === 'none' ? due : nextDue(due, this.form.repeat, Date.now() - 1), repeat: this.form.repeat, done: false });
-      this.form.title = '';
+      const rep = this.form.repeat, dom = new Date(due).getDate();
+      if (rep === 'none' && due <= Date.now()) { this.error = 'Это время уже прошло.'; return; }
+      if (rep !== 'none' && due <= Date.now()) due = nextAfter({ due, repeat: rep, dom }, Date.now());
+      if (this.editId) {
+        const r = this.items.find(x => x.id === this.editId);
+        if (r) { r.title = title; r.due = due; r.repeat = rep; r.dom = dom; delete r.snooze; }
+      } else {
+        this.items.push({ id: uid(), title, due, repeat: rep, dom });
+      }
+      this.formOpen = false; this.resetForm(); this.save(); this.syncAll();
+    },
+    remove(id) { this.items = this.items.filter(r => r.id !== id); if (this.editId === id) this.cancelForm(); this.save(); this.syncAll(); },
+
+    /* ---------- срабатывание ---------- */
+    check() {
+      const now = Date.now(); let changed = false; const keep = [];
+      for (const r of this.items) {
+        if (r.due > now) { keep.push(r); continue; }
+        const late = now - r.due; changed = true;
+        if (r.repeat === 'none') {
+          if (late <= LATE_MAX) this.fire(r, late > GRACE); else this.logRow(r, 'missed');
+        } else {
+          if (late <= GRACE) this.fire(r, false); else this.logRow(r, 'missed');
+          r.due = nextAfter(r, now); keep.push(r);
+        }
+      }
+      if (changed) { this.items = keep; this.save(); this.syncAll(); }
+    },
+    logRow(r, state) { this.log.unshift({ id: uid(), rid: r.id, title: r.title, at: Date.now(), due: r.due, state }); },
+    fire(r, late) {
+      this.log.unshift({ id: uid(), rid: r.id, title: r.title, at: Date.now(), due: r.due, late, state: 'new', alert: true });
+      this.chime(); this.notify('Напоминание', r.title, r.id + '@' + r.due);
+    },
+    ack(l) { l.state = 'done'; l.alert = false; l.doneAt = Date.now(); this.log = [...this.log]; this.save(); },
+    snooze(l, min) {
+      l.state = 'snoozed'; l.alert = false; this.log = [...this.log];
+      this.items.push({ id: uid(), title: l.title, due: Date.now() + min * MIN, repeat: 'none', snooze: true });
       this.save(); this.syncAll();
     },
-    remove(id) { this.items = this.items.filter(r => r.id !== id); this.save(); this.syncAll(); },
-    // запасной вариант: пока приложение открыто, уведомление показывает сама страница
-    async check() {
-      const now = Date.now(); let changed = false;
-      for (const r of this.items) {
-        if (r.done || r.due > now) continue;
-        if (now - r.due < 120000 && 'Notification' in window && Notification.permission === 'granted') {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            await reg.showNotification('Напоминание', { body: r.title, tag: r.id + '@' + r.due, data: { url: '/' } });
-          } catch (e) {}
-        }
-        r.lastFired = ymd(new Date());
-        if (r.repeat === 'none') r.done = true; else r.due = nextDue(r.due, r.repeat, now);
-        changed = true;
-      }
-      if (changed) { this.save(); this.syncAll(); }
+    dismissAlerts() { this.log.forEach(l => { l.alert = false; }); this.log = [...this.log]; this.save(); },
+    reuse(l) { this.resetForm(); this.form.title = l.title; this.formOpen = true; this.tab = 'today'; this.$nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' })); },
+    clearHistory() { this.log = this.log.filter(l => l.state === 'new'); this.confirmClear = false; this.save(); },
+
+    /* ---------- звук, вибрация, системное уведомление ---------- */
+    chime() {
+      try { if (navigator.vibrate) navigator.vibrate([220, 110, 220, 110, 380]); } catch (e) {}
+      try {
+        actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume();
+        [[880, 0], [1175, .22], [1480, .44]].forEach(([f, t]) => {
+          const o = actx.createOscillator(), g = actx.createGain(), at = actx.currentTime + t;
+          o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(.25, at + .03); g.gain.exponentialRampToValueAtTime(.0001, at + .5);
+          o.connect(g); g.connect(actx.destination); o.start(at); o.stop(at + .55);
+        });
+      } catch (e) {}
     },
-    // серверу отправляем весь список активных напоминаний — он пришлёт push, даже когда приложение закрыто
+    async notify(title, body, tag) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      try {
+        if ('serviceWorker' in navigator) {
+          // без таймаута «ready» может не завершиться никогда (сервис-воркер не зарегистрирован) — раньше из-за этого напоминания вообще не срабатывали
+          const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((_, rej) => setTimeout(rej, 1500))]);
+          await reg.showNotification(title, { body, tag, data: { url: '/' } });
+          return;
+        }
+      } catch (e) {}
+      try { new Notification(title, { body, tag }); } catch (e) {}
+    },
+    get canAsk() { return 'Notification' in window && Notification.permission === 'default'; },
+    async askNotify() { try { await Notification.requestPermission(); } catch (e) {} this.now = Date.now(); },
+    testNotify() {
+      this.chime(); this.notify('Напоминание', 'Так выглядит уведомление', 'test@' + Date.now());
+      this.testMsg = ('Notification' in window && Notification.permission === 'granted') ? 'Отправлено. Если уведомления не видно, проверьте настройки устройства.' : 'Звук и вибрация сработали. Системные уведомления выключены — нажмите «Разрешить».';
+      setTimeout(() => { this.testMsg = ''; }, 6000);
+    },
+
+    /* ---------- сервер (по желанию): push, когда приложение закрыто ---------- */
     async syncAll() {
       try {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-        const reg = await navigator.serviceWorker.ready;
+        const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((_, rej) => setTimeout(() => rej(new Error('sw')), 2500))]);
         const sub = await reg.pushManager.getSubscription();
         if (!sub) return;
-        const reminders = this.items.filter(r => !r.done).map(r => ({ id: r.id, title: r.title, due: r.due, repeat: r.repeat }));
+        // сервер знает только «один раз», «каждый день», «каждую неделю»; остальные отправляем как разовые на ближайшую дату (список пересылается после каждого срабатывания)
+        const reminders = this.items.map(r => ({ id: r.id, title: r.title, due: r.due, repeat: (r.repeat === 'daily' || r.repeat === 'weekly') ? r.repeat : 'none' }));
         const resp = await fetch('/api/reminders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'sync', subscription: sub.toJSON(), reminders }) });
         if (!resp.ok) throw new Error('bad');
         this.syncError = '';
       } catch (e) {
-        this.syncError = 'Напоминание сохранено на этом устройстве, но сервер его не принял. Когда приложение закрыто, push не придёт.';
+        if (e && e.message === 'sw') return;
+        this.syncError = 'Сервер не принял список. Пока приложение открыто, напоминания сработают здесь, но push на закрытое приложение может не прийти.';
       }
     }
   };
@@ -3023,9 +3412,10 @@ function shell() {
         if (id === 'reminders') {
           const d = JSON.parse(localStorage.getItem('reminders.v1'));
           if (!d || !Array.isArray(d.items)) return null;
-          const fired = d.items.filter(r => r.lastFired === key).length;
-          const waiting = d.items.filter(r => !r.done && r.lastFired !== key && ymd(new Date(r.due)) === key).length;
-          return fired + waiting ? { label: 'Сегодня сработало', done: fired, total: fired + waiting } : null;
+          const fired = (Array.isArray(d.log) ? d.log : []).filter(l => l.state !== 'missed' && l.state !== 'snoozed' && ymd(new Date(l.at)) === key);
+          const waiting = d.items.filter(r => !r.done && ymd(new Date(r.due)) === key).length;
+          const done = fired.filter(l => l.state === 'done').length;
+          return fired.length + waiting ? { label: 'Сегодня выполнено', done, total: fired.length + waiting } : null;
         }
         if (id === 'growth') {
           const d = JSON.parse(localStorage.getItem('growthtracker.v1'));
@@ -3066,7 +3456,7 @@ function growthApp() {
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   const shift = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
   return {
-    tab: 'habits', today: ymd(new Date()), tick: 0,
+    tab: 'habits', today: ymd(new Date()),
     habits: [], logs: {}, goals: [], books: [],
     hOpen: false, gOpen: false, bOpen: false,
     hForm: { name: '', icon: 'sprout', time: '' }, gForm: { name: '', target: '', unit: '' }, bForm: { title: '', author: '', pages: '' },
@@ -3074,6 +3464,7 @@ function growthApp() {
     nav: [{ id: 'habits', label: 'Привычки', icon: 'sprout' }, { id: 'goals', label: 'Цели', icon: 'target' }, { id: 'books', label: 'Книги', icon: 'book' }],
     ic(n, c) { return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${c}">${ICONS_GROWTH[n] || ''}</svg>`; },
     init() {
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) this.today = ymd(new Date()); });   // раньше вешалось только при первом запуске
       try {
         const d = JSON.parse(localStorage.getItem(GROWTH_KEY));
         if (d) { this.habits = d.habits || []; this.logs = d.logs || {}; this.goals = d.goals || []; this.books = d.books || []; return; }
@@ -3082,7 +3473,6 @@ function growthApp() {
         { id: uid(), name: 'Чтение 20 минут', icon: 'book' }, { id: uid(), name: 'Стакан воды утром', icon: 'droplet' }, { id: uid(), name: 'Медитация', icon: 'brain' }
       ];
       this.save();
-      document.addEventListener('visibilitychange', () => { if (!document.hidden) this.today = ymd(new Date()); });
     },
     save() { try { localStorage.setItem(GROWTH_KEY, JSON.stringify({ habits: this.habits, logs: this.logs, goals: this.goals, books: this.books })); } catch (e) {} },
     longDate(k) { return parseKey(k).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }); },
@@ -3206,6 +3596,8 @@ function growthApp() {
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); }, root = $('mc'), log = $('mcLog'), pet = $('mcPet');
+  var srvKey = false;   // true, если ключ Gemini задан на сервере (Vercel: GEMINI_API_KEY)
+  try { if (/^https?:/.test(location.protocol)) fetch('/api/gemini/status').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { srvKey = !!(j && j.hasKey); }).catch(function () {}); } catch (e) {}
   var LS = { get: function (k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } }, set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
   var hist = [], busy = false, open = false;
   var SYS = 'Ты — дружелюбный маскот-помощник в приложении «Мой день» (лекарства, спорт, питание, привычки). Отвечай по-русски, коротко и тепло, 1–4 предложения, без лишней воды. Ты не врач: по лекарствам и здоровью давай общие советы и при серьёзных вопросах советуй обратиться к специалисту. ' +
@@ -3246,8 +3638,8 @@ function growthApp() {
   function show() {
     if (open) return; open = true; root.classList.remove('out'); root.classList.add('on'); document.documentElement.classList.add('mc-lock'); clampPos(); back.classList.remove('out'); back.classList.add('on'); lock(true); chime(true);
     if (!log.children.length) add('Привет! Я твой помощник 👋 Спроси меня о чём угодно.', 'bot');
-    if (!LS.get('mc_key', '')) { add('Чтобы я мог отвечать, добавь ключ Gemini API в настройках (⚙).', 'bot'); $('mcSet').classList.add('open'); }
-    setTimeout(function () { if (open && LS.get('mc_key', '')) $('mcIn').focus(); }, 500);
+    if (!LS.get('mc_key', '') && !srvKey) { add('Чтобы я мог отвечать, добавь ключ Gemini API в настройках (⚙).', 'bot'); $('mcSet').classList.add('open'); }
+    setTimeout(function () { if (open && (LS.get('mc_key', '') || srvKey)) $('mcIn').focus(); }, 500);
   }
   // фон не двигается, пока открыт маскот; само окошко можно перетаскивать за шапку или за маскота
   var ox = 0, oy = 0, dg = null, moved = false;
@@ -3454,7 +3846,7 @@ function growthApp() {
 
   function ask(q) {
     if (!q || busy) return;
-    var key = LS.get('mc_key', ''); if (!key) { $('mcSet').classList.add('open'); add('Сначала добавь ключ Gemini API в настройках (⚙).', 'bot err'); return; }
+    var key = LS.get('mc_key', ''); if (!key && !srvKey) { $('mcSet').classList.add('open'); add('Сначала добавь ключ Gemini API в настройках (⚙).', 'bot err'); return; }
     $('mcIn').value = ''; add(q, 'me'); hist.push({ role: 'user', parts: [{ text: q }] }); if (hist.length > 12) hist = hist.slice(-12);
     busy = true; acted = 0; var wait = curWait = add('', 'bot', '<span class="mc-dots"><span></span><span></span><span></span></span>'); pet.classList.add('talk');
     run(hist, 0).then(function (r) {
@@ -3474,6 +3866,83 @@ function growthApp() {
 })();
 </script>
 
+
+<script>
+/* ---------- ЗВУКИ ИНТЕРФЕЙСА: щелчки при переходе по вкладкам, «фых-фых» когда кубик летит по нижней панели ---------- */
+(function () {
+  var KEY = 'ui.sound.v1', enabled = true;
+  try { enabled = localStorage.getItem(KEY) !== '0'; } catch (e) {}
+  var ctx = null, nbuf = null, lastTap = 0;
+  function ac() {
+    try { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === 'suspended') ctx.resume(); } catch (e) { ctx = null; }
+    return ctx;
+  }
+  function noise(c) {
+    if (nbuf) return nbuf;
+    var n = (c.sampleRate * 0.6) | 0, b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    return (nbuf = b);
+  }
+  function env(g, t, peak, dur) {
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + Math.min(0.006, dur / 3));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  }
+  function tone(c, t, type, f0, f1, dur, peak) {
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t);
+    if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    env(g, t, peak, dur); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
+  }
+  function tick(c, t, hz, dur, peak) {                       // короткий шумовой «клик»
+    var s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = noise(c); f.type = 'highpass'; f.frequency.value = hz; env(g, t, peak, dur);
+    s.connect(f); f.connect(g); g.connect(c.destination); s.start(t, Math.random() * 0.3, dur + 0.02);
+  }
+  function puff(c, t, f0, f1, dur, peak) {                   // «фых»: шум через полосовой фильтр с «пролётом» по частоте
+    var s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = noise(c); f.type = 'bandpass'; f.Q.value = 0.9;
+    f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + dur * 0.35); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f); f.connect(g); g.connect(c.destination); s.start(t, Math.random() * 0.2, dur + 0.02);
+  }
+  var API = {
+    // у каждой вкладки свой звук: тик, «деревянный» стук, двойной щелчок, мягкий «блюп»
+    click: function (i) {
+      if (!enabled) return; var c = ac(); if (!c) return; var t = c.currentTime + 0.005;
+      switch (((i || 0) % 4 + 4) % 4) {
+        case 0: tone(c, t, 'square', 1250, 900, 0.035, 0.07); tick(c, t, 3500, 0.02, 0.12); break;
+        case 1: tone(c, t, 'triangle', 720, 380, 0.07, 0.2); tick(c, t, 2200, 0.015, 0.06); break;
+        case 2: tick(c, t, 3000, 0.02, 0.16); tick(c, t + 0.055, 4200, 0.02, 0.12); break;
+        default: tone(c, t, 'sine', 520, 920, 0.09, 0.2); tick(c, t, 3800, 0.012, 0.05);
+      }
+    },
+    enter: function () {                                     // вход в раздел с главной
+      if (!enabled) return; var c = ac(); if (!c) return; var t = c.currentTime + 0.005;
+      tone(c, t, 'sine', 300, 180, 0.12, 0.22); tick(c, t, 2500, 0.02, 0.1); tone(c, t + 0.07, 'triangle', 620, 880, 0.08, 0.1);
+    },
+    swoosh: function (dir) {                                 // кубик летит: «фых» на взлёте и мягкое «фых» на посадке
+      if (!enabled || performance.now() - lastTap > 900) return; var c = ac(); if (!c) return; var t = c.currentTime + 0.01;
+      var up = dir >= 0;
+      puff(c, t, up ? 500 : 2800, up ? 2800 : 500, 0.26, 0.2);
+      puff(c, t + 0.31, 1300, 650, 0.16, 0.11);
+    },
+    get enabled() { return enabled; },
+    set: function (v) { enabled = !!v; try { localStorage.setItem(KEY, enabled ? '1' : '0'); } catch (e) {} if (enabled) API.click(1); }
+  };
+  window.UISND = API;
+  document.addEventListener('pointerdown', function (e) {
+    var tg = e.target && e.target.closest ? e.target : null; if (!tg) return;
+    var b = tg.closest('nav button');
+    if (b) {
+      var nav = b.closest('nav'), list = Array.prototype.slice.call(nav.querySelectorAll('button'));
+      lastTap = performance.now(); API.click(list.indexOf(b)); return;
+    }
+    var card = tg.closest('.grid.content-start > button');
+    if (card && !card.disabled) { lastTap = performance.now(); API.enter(); }
+  }, true);
+})();
+</script>
 
 <script>
 /* Один «кубик» летает между вкладками нижней панели */
@@ -3499,6 +3968,7 @@ function growthApp() {
     pill.style.width = w + 'px'; pill.style.height = h + 'px';
     pill.style.background = col + '.18)'; pill.style.boxShadow = '0 6px 16px ' + col + '.25)';
     if (first) { void pill.offsetWidth; pill.style.transition = ''; }
+    if (moved && window.UISND) window.UISND.swoosh(x > pill._x ? 1 : -1);
     if (moved && pill.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       // прыжок вверх и лёгкое растяжение в полёте
       pill.animate([
