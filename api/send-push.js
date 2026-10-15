@@ -1,60 +1,38 @@
 const webpush = require('web-push');
 
-const publicKey = process.env.PUBLIC_VAPID_KEY || 'BJNPsBLXpVqCEOJz-2OM_1ICVYVpIFlyFfIRwd8pKeYjQavcZF2Nx5DCOwwXFl3Ml6SGfyG3kz24pQjaoVpDewY';
-const privateKey = process.env.PRIVATE_VAPID_KEY || 'GGpRo23gcKJGMhbZ7bbU1rfpeClqGoSijOlC_PSdpCE';
-
-webpush.setVapidDetails(
-  'mailto:karievdakam.com@gmail.com',
-  publicKey,
-  privateKey
-);
-
-let subscriptions = [];
-
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  const pub = process.env.PUBLIC_VAPID_KEY;
+  const priv = process.env.PRIVATE_VAPID_KEY;
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  if (req.method === 'GET') {
+    if (!pub) return res.status(500).json({ error: 'PUBLIC_VAPID_KEY not set' });
+    return res.status(200).json({ publicKey: pub });
   }
 
-  if (req.method === 'POST') {
-    try {
-      const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      const { subscription, action, payload } = body;
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
-      if (action === 'save') {
-        if (subscription && !subscriptions.some(s => s.endpoint === subscription.endpoint)) {
-          subscriptions.push(subscription);
-        }
-        return res.status(200).json({ success: true, message: 'Subscription saved' });
-      }
+  try {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    const { action, subscription, title, body: text, url } = body;
+    if (!subscription || !subscription.endpoint) return res.status(400).json({ error: 'no subscription' });
 
-      if (action === 'send') {
-        const pushPayload = JSON.stringify(payload || {
-          title: 'Мой День 🚀',
-          body: 'Тестовое уведомление прошло успешно!'
-        });
-
-        const targetSub = subscription || subscriptions[subscriptions.length - 1];
-
-        if (!targetSub) {
-          return res.status(400).json({ success: false, error: 'Подписка не найдена' });
-        }
-
-        await webpush.sendNotification(targetSub, pushPayload);
-        return res.status(200).json({ success: true, message: 'Push sent successfully' });
-      }
-
-      return res.status(400).json({ success: false, error: 'Неизвестное действие' });
-    } catch (error) {
-      console.error('Push error:', error);
-      return res.status(500).json({ success: false, error: error.message || error.toString() });
+    if (action === 'save') {
+      return res.status(200).json({ ok: true });
     }
-  }
 
-  res.status(405).json({ error: 'Method Not Allowed' });
+    if (action === 'send') {
+      if (!pub || !priv) return res.status(500).json({ error: 'VAPID keys not set' });
+      webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:admin@example.com', pub, priv);
+      await webpush.sendNotification(
+        subscription,
+        JSON.stringify({ title: title || 'Мой День', body: text || '', url: url || '/' }),
+        { TTL: 3600, urgency: 'high' }
+      );
+      return res.status(200).json({ ok: true });
+    }
+
+    return res.status(400).json({ error: 'bad action' });
+  } catch (e) {
+    return res.status(500).json({ error: String(e.message || e) });
+  }
 };
