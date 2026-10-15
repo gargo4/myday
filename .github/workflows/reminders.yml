@@ -7,4 +7,5 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -fsS -H "Authorization: Bearer ${{ secrets.SEND_SECRET }}" "${{ secrets.SITE_URL }}/api/cron"
+      - run: |
+          curl -fsS -H "Authorization: Bearer ${{ secrets.SEND_SECRET }}" "${{ secrets.SITE_URL }}/api/cron"
